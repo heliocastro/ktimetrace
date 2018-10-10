@@ -1,42 +1,42 @@
-/***************************************************************************
-                          ktimetrace.h  -  description
-                             -------------------
+//  This file is part of ktimetracer.
 
-KTraceApp is the top-level class for the program.  Everything starts from here.
+//  ktimetracer is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
-    begin                : Tue May 23 17:09:23 CDT 2000
-    copyright            : (C) 2000 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  ktimetracer is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetracer.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
 #ifndef KTRACEAPP_H
 #define KTRACEAPP_H
 
+#include <QMainWindow>
 
-#include <kmainwindow.h>
+//#include "data.h"
+//#include "resource.h"
 
-#include "data.h"
-#include "resource.h"
+class QPopupMenu;
+class QTimer;
 
-class KTraceApp : public KMainWindow
+class KTraceApp : public QMainWindow
 {
-Q_OBJECT
+	Q_OBJECT
 public:
-	KTraceApp(QWidget *parent = 0, const char *name = 0);
+	KTraceApp();
 	~KTraceApp();
 	/* creates a caption for the main window and displays it */
 	void defaultCaption();
 	/* our daq card object - this shouldn't need to be public! */
-	adc dataCard;
+	//adc dataCard;
 	/* turns various gui controls on and off according to whether or not
 	 * we are currently aquiring data*/
 	void setControlsEnabled(bool go);
@@ -44,10 +44,7 @@ protected:
 	virtual bool queryClose();
 	virtual bool queryExit();
 private:
-	/* go! */
-	void startTrace();
-	/* stop! */
-	void stopTrace();
+	void createActions();
 	/* sets the /dev/comediX device we want to use */
 	int setDevice(unsigned int);
 	// save settings to confuration file
@@ -63,18 +60,17 @@ private:
 	QPopupMenu *viewMenu;
 	/* help menu on menubar */
 	QPopupMenu *myHelpMenu;
-	// toolbar
-	KToolBar *myToolBar;
 	/* the main graphical display widget */
-	KTraceView *view;
+	//KTraceView *view;
 	/* our poorly thought-out catch-all class*/
-	KTTEngine data;
+	//KTTEngine data;
 	/* used to periodically update the status led */
 	QTimer *statusTimer;
 	/* total number of possible /dev/comediX files */
 	static const unsigned int maxDev = 4;
 private slots:
-	void commandCallback(int id);
+	void startTrace();
+	void stopTrace();
 	// handles 'comedi buffer' item on settings menu
 	void slotBuffer();
 	// handles 'zoom' item on view menu

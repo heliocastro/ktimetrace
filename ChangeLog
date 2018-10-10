@@ -197,3 +197,4 @@ for first public release
 
 0.2.37: Fixed gcc 3 compiler errors/warnings (Dave Schleef).  Updated admin files from
 	kde 3.3.2.
+0.3.0: Porting for Qt5 only
