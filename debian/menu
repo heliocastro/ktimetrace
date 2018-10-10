@@ -1,6 +1,0 @@
-?package(ktimetrace):\
-	needs=X11 \
-	section=Apps/System \
-	hints=Monitoring \
-	title="KTimeTrace" \
-	command="/usr/bin/ktimetrace"

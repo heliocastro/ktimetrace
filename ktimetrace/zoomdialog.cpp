@@ -15,13 +15,16 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QtWidgets/QLineEdit>
+#include <QString>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLabel>
 
 #include "zoomdialog.h"
 
-#include <qwhatsthis.h>
-#include <qstring.h>
-
-ZoomDialog::ZoomDialog(QWidget *parent, const char *name) : QDialog(parent, name, true)
+ZoomDialog::ZoomDialog(QWidget *parent, const char *name) :
+	QDialog(parent, name, true)
 {
 	const int hsep = 10, vsep = 10;
 
@@ -30,8 +33,10 @@ ZoomDialog::ZoomDialog(QWidget *parent, const char *name) : QDialog(parent, name
 	hZoomInput = new QLineEdit(this);
 	hZoomInput->move(hsep, vsep);
 	hZoomInput->adjustSize();
-	QWhatsThis::add(hZoomInput, "This controls the horizontal zoom for plotting.  "
-		"Valid input is a number between 0.1 and 10.");
+	hZoomInput->setWhatsThis(
+		"This controls the horizontal zoom for plotting."
+		"Valid input is a number between 0.1 and 10."
+		);
 
 	hZoomInputLabel = new QLabel("Horizontal Zoom (pixels per data point)", this);
 	hZoomInputLabel->move(hZoomInput->geometry().right() + hsep, hZoomInput->y());
@@ -51,7 +56,6 @@ ZoomDialog::ZoomDialog(QWidget *parent, const char *name) : QDialog(parent, name
 	connect(hZoomInput, SIGNAL(textChanged(const QString &)), SLOT(slotHZoomInput(const QString &)));
 	connect(okButton, SIGNAL(clicked()), SLOT(accept()));
 	connect(cancelButton, SIGNAL(clicked()), SLOT(reject()));
-	
 }
 
 ZoomDialog::~ZoomDialog()

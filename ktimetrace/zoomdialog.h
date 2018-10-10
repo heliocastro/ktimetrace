@@ -15,34 +15,30 @@
  *                                                                         *
  ***************************************************************************/
 
-
 #ifndef ZOOMDIALOG_H
 #define ZOOMDIALOG_H
 
-#include <qlineedit.h>
-#include <qlabel.h>
-#include <qdialog.h>
-#include <qpushbutton.h>
-
-/**
-  *@author Frank Mori Hess
-  */
+class QLineEdit;
+class QLabel;
+class QDialog;
+class QPushButton;
 
 class ZoomDialog : public QDialog
 {
-Q_OBJECT
-public:
+	Q_OBJECT
+  public:
 	ZoomDialog(QWidget *parent = 0, const char *name = 0);
 	~ZoomDialog();
 	// set / return horizontal zoom value
 	float hZoom(float zoom = -1);
-private:
+
+  private:
 	float horizontalZoom;
 	QLineEdit *hZoomInput;
 	QLabel *hZoomInputLabel;
 	QPushButton *okButton;
 	QPushButton *cancelButton;
-private slots:
+  private slots:
 	void slotHZoomInput(const QString &zoomText);
 };
 
