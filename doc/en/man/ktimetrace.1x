@@ -1,0 +1,52 @@
+.TH KTIMETRACE 1 "June 28, 2001"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+ktimetrace \- graphical interface for data aquisition
+.SH SYNOPSIS
+.B ktimetrace
+.br
+.SH DESCRIPTION
+.B ktimetrace
+provides a graphical front end for analog input data aquisition.
+It uses the comedilib library, and hardware drivers provided by
+.B comedi
+to perform data aquisition.  Its graphical interface was built
+using the QT and KDE libraries.
+.PP
+When the program is started, it automatically searches for a
+working analog input on the comedi device files /dev/comedi[0-3].
+You can change the device with the settings-->device menu.  To
+start aquisition, press the 'go' button.  You will be prompted with
+a dialog which will let you specify the details of how the data is
+to be aquired.
+.PP
+Most of the controls in the program's dialogs have "what's this?"
+help.  It can be accessed by pressing the button labeled with a question mark
+and located in the upper right corner of the dialog,
+then clicking on the control you are interested in.
+.PP
+In addition to creating data files with .txt, .txt.gz, or .ts? extensions
+(depending on the format),
+.B ktimetrace
+also produces files with a .ts-par extension, which are text files containing
+some information on the settings which were used during aquisition.
+
+.SH OPTIONS
+This program does not have any useful command line options.
+.SH SEE ALSO
+.BR comedi (7),
+.BR comedi_config (8).
+.br
+.SH AUTHOR
+Frank Mori Hess <fmhess@uiuc.edu>.

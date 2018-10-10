@@ -1,0 +1,27 @@
+oscilloscope-like triggering options (for graphics display)
+
+make more pop-up windows for error messages instead of using cerr
+
+help files!
+
+board information dialog from menu (combine with device selection popup,
+and allow selection of board by board name instead of device file name)
+
+give some visual indication of when a (block mode) plot update occurs
+
+make it automatically switch from point-by-point plotting mode to block
+mode if it is having problems with point-by-point
+
+label vertical axis with display range
+
+add raw binary save format that saves data exactly as it comes out of
+comedi
+
+add unconverted-to-physical-units save text file format
+
+add xml save format
+
+make better use of Standard Template Library
+
+make layouts less sensitive to font size
+

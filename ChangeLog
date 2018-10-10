@@ -1,0 +1,199 @@
+1.00:	Original version 6/00 FMH
+
+1.01:	Made kapp->processEvents() occur every 1/10th of a second (up to a
+	maximum of once per point) instead of every 100 data points.
+
+1.02:	Made saved data map -5 to +5 volts onto -2048 to +2047 instead of
+	mapping onto 0 to 4095.  This is to maintain backward compatibility
+	with old DOS timetrace programs.
+
+1.03:	Changed 'ok' button focus policy to StrongFocus in order to fix
+	bug with QSpinBoxes not updating.
+
+1.04:	REALLY fixed problem with QSpinBoxes this time by setting focus
+	to okButton when it is pressed (before pressing alt-o could activate
+	okButton without shifting focus to it.)
+
+	Made main window caption display name of file being recorded.
+
+	Added progress bar.
+
+1.05:	Fixed problem with window caption not displaying the correct
+	file number for the first data file taken after opening program
+
+1.06:	Fixed graphics so they only update when there is no data waiting
+	to be read.
+
+2.00:	First port to KDE2 / QT2.2.  Only changed lines to load start/stop
+	icons and set initial window size
+
+2.01:	Improved interruption of data taking so it doesn't falsely indicate
+	interruption succeeded (only happened very rarely.) Fixed Dialog
+	problems due to change in QT signals from version 1 to version 2.
+
+2.02:	Made settings save into configuration file upon exit of program.
+
+2.03:	First port to COMEDI device drivers
+
+2.04: Fixed bugs that prevented taking more than one channel and
+	caused program to ask for wrong number of points from comedi.
+	Fixed bug in adc::start where one extra element was written
+	to chanList array.
+
+2.05: Added new save file format options so data can be saved
+	as tab delimited text, optionally gzipped.
+
+*** appended zero to begginning of version number
+for first public release
+
+0.2.06:	Added fallback triggers to adc class.  Made program less
+	dependent on particulars of a/d hardware used.  Added
+	selectable ranges.  Made text file output in volts instead
+	of integer.
+
+0.2.07:	Made text files output in scientific format.  Fixed bug
+	with save filename, fixed bug with repaint after data taking
+	is complete.	2000-12-31 FMH
+
+0.2.08:	Fixed crashing associated with 'defaults' button. Added
+	option to set analog reference.  Fixed adc object so it works
+	with older versions of comedi that are buggier.  Gzipping of
+	text files now done in background.  Added some checks that
+	save file directory is valid.  Made plotting for 16 bit cards
+	work.
+
+0.2.09: Made program stop when an error from comedi terminates
+	data collection, instead of waiting forever for more data.
+
+0.2.10: Fixed a memory leak introduced in 0.2.09.  Sends
+	stop command to data card in the event of unexpected error.
+	Greatly reduced load on cpu by buffering reads from comedi into
+	1 kbyte blocks instead of one data point at a time.  Made
+	data stream to disk instead of accumulating in memory.
+	Gzipping is also done on the fly using zlib.
+
+0.2.11: Tried to make screen update at least every 1% of data
+	taken.  Improved efficiency of some adc member function calls.
+	Reworked streaming to disk so it streams raw data to temporary
+	file then processes it at the end.  Fixed bug that caused
+	problems when plotting was not updated often enough during
+	fast data collection
+
+0.2.12: Made which comedi device to use configurable.
+	Made program autodetect a working analog input on any of the
+	comedi device files.
+
+0.2.13: Used tmpfile() function to create proper temporary file
+	instead of trying to do it myself.  Added check for write
+	errors to files (for example disk full).
+
+0.2.14: Fixed toolbar problem with kdelib 2.1
+
+0.2.15: Added support for external trigger to start aquisition
+
+0.2.16: Split ktimetrace.cpp and ktimetrace.h into multiple files.
+	made it check settings of default triggers with board.
+	Added some comments to header files.  Added save directory dialog.
+	Added support for choosing begin scan and conversion triggers.
+	Dropped averaging of samples for the time being.
+
+0.2.17: added checkboxes for TRIG_RT and TRIG_WAKE_EOS.
+	Made graphics update continuously or in blocks depending on
+	TRIG_WAKE_EOS.  Cleaned up KTraceData object a bit.
+
+0.2.18: Made progress bar update once per second.
+	Fixed bug with dialog having some scan triggers show up in start trigger
+	combobox.
+
+0.2.19: Fixed low latency mode plotting glitch.  Made program multithreaded,
+	there is now no delay in waiting for save file to be written at
+	end of aquisition, since the writing of the save file has a
+	seperate thread.  Added display of boardname to dialog. Added some
+	popup warning messages on errors.  Added 'what's this?' help to widgets
+	in dialog.
+
+0.2.20: Fixed some problems with program exit due to bugs in qt.  Added
+	saving of main window configuration.  Made sure all asynchronous file
+	writes complete before program exits.  Made real time and low latency
+	settings save to config file.  2001-06-13
+
+0.2.21: Fixes for compile on RedHat 7.1.  Added configuration dialog
+	for comedi's buffer.
+
+0.2.22: Added popup message to tell user when application
+	closing is delayed due to file writing in progress.  Added more popup
+	messageboxes for errors.  Got rid of some junk in help menu.  Added
+	'control' menu, which does nothing new really.  Fixed a race that
+	happened when the file writing thread encountered a write error.  Fix
+	for compile on SuSe 6.4.  Added some checking of settings when the
+	device is switched.
+
+0.2.23: Fixed corruption of writeThreadCount.
+
+0.2.24: Fixed sending of TRIG_RT and TRIG_WAKE_EOS comedi_cmd flags.
+
+0.2.25: Limited number of channels to board's capability.  More
+	than 8 channels can be chosen now (only the first 8 are displayed).
+	Added check to see if range is actually in volts.  Added a status
+	LED indicator that indicates how many files are being written in the
+	background.  Added a status LED which indicates if a working analog
+	input is open.  Added a brief man page.
+
+0.2.26: Split off KTTSettings class from KTraceData.  Added horizontal
+	zoom option.  Enabled changing of max buffer size (with root privilege).
+	Now requires comedilib-0.7.16.
+
+0.2.27: Fixed toolbar for kde-2.2.  Converted to KMainWindow from deprecated
+	KTMainWindow.
+
+0.2.28: Changed meanings of led indicators!  Made sure
+	toolbar can't be hidden due to a weird setting in config file.  Added
+	horizontal zoom buttons and display.  Greatly
+	increased cpu efficiency of plotting in 'point-by-point' mode,
+	although there is still room for improvement especially for
+	point-by-point mode with very low zoom.
+
+0.2.29: More tuning to plotting routine, I'm quite happy with it now.
+
+0.2.30: Tweaks to point-by-point plotting.  Corrected off-by-one
+	error in displayed display width.  Added input
+	range, input units, and input reference to parameter file.  Made it get
+	supported analog references
+	from driver instead of always displaying ground/common/differential options.  Added
+	display of current horizontal zoom factor.  Added check for sucessful
+	writing of .ts-par file.  Added color selection dialogs to make plotting colors
+	customizable.
+
+0.2.31: Added calls to comedi_poll() when in low latency mode for
+	drivers that don't support TRIG_WAKE_EOS but do support comedi_poll() (only
+	the das16m1.c driver as far as I know, but hey I have one.)  Fixed bug in
+	selection of input reference introduced in 0.2.30.  Added support for selection
+	of stop trigger.  Changes due to addition of external stop trigger support
+	now requires comedi version > 0.7.60 (cvs versions newer than 2001-10-19 are okay)
+	in order for hardware errors during aquisition
+	to be detected reliably.  Added number of scans actually completed to parameter
+	file (changed label for number of scans requested!).  Added board name to
+	parameter file.
+
+0.2.32: Made multithreading more aggressive.  Disabled comboboxes
+	in dialog that don't have more than one option.  Debian packaging files added.
+	Added capability to execute user-defined shell command at beginning and/or
+	end of data aquisition.
+
+0.2.33: Really added Debian packaging files this time (they got
+	left out of released tarball last time).  Fixed setting of shell variable
+	KTT_DATA_FILE for file names with spaces or other special characters.
+	Fixed compilation under gcc-3.0.
+
+0.2.34: Did (trivial) port so ktimetrace now compiles against kde version 3 as
+	well as version 2.  Fixed reading back of modified scan and convert arguments
+	after aquisition is started, for later display as initial values in dialog.  Made
+	'true binary' save file format always save to little endian byte ordering.  Improved
+	widget layout to be less sensitive to font size.
+
+0.2.35: Fixed compilation problems with systems that use automake > 1.4
+
+0.2.36: Another automake > 1.4 fix
+
+0.2.37: Fixed gcc 3 compiler errors/warnings (Dave Schleef).  Updated admin files from
+	kde 3.3.2.

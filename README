@@ -1,0 +1,21 @@
+This program requires:
+
+comedi, and comedilib <http://stm.lbl.gov/comedi>
+(The comedi driver for your card must support the command interface)
+
+kde version 2 or 3 libraries <http://www.kde.org>
+
+zlib library <http://www.info-zip.org/pub/infozip/zlib>
+
+ktimetrace is currently available over the world wide web from
+
+http://ktimetrace.sourceforge.net
+
+There isn't much documentation at the moment.  Most of the
+controls in the dialogs have 'what's this?' help though.  Click
+on the button with the question mark, then click on the control
+you are interested in.
+
+Please send any bug reports or suggestions to the ktimetrace
+mailing list (see web page) or email fmhess@users.sourceforge.net
+
