@@ -41,19 +41,59 @@
 # ::
 #
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(COMEDI REQUIRED comedilib)
+find_path(COMEDI_INCLUDE_DIR comedi.h PATH_SUFFIXES include)
 
-if(COMEDI_FOUND)
+if(NOT COMEDI_LIBRARIES)
+    find_library(COMEDI_LIBRARY_RELEASE NAMES comedi PATH_SUFFIXES lib lib64)
+    find_library(COMEDI_LIBRARY_DEBUG NAMES comedid PATH_SUFFIXES lib lib64)
+
+    include(SelectLibraryConfigurations)
+    select_library_configurations(COMEDI)
+else()
+    file(TO_CMAKE_PATH "${COMEDI_LIBRARIES}" COMEDI_LIBRARIES)
+endif()
+
+set(COMEDI_VERSION_STRING "0.8.1")
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Comedi
+                              REQUIRED_VARS COMEDI_LIBRARIES COMEDI_INCLUDE_DIR
+                              VERSION_VAR COMEDI_VERSION_STRING)
+
+if (COMEDI_FOUND)
+    include(CheckSymbolExists)
+    include(CMakePushCheckState)
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_QUIET ${comedi_FIND_QUIETLY})
+    set(CMAKE_REQUIRED_INCLUDES ${COMEDI_INCLUDE_DIR})
+    set(CMAKE_REQUIRED_LIBRARIES ${COMEDI_LIBRARIES})
+    check_symbol_exists(comedi_perror "comedilib.h" COMEDI_NEED_PREFIX)
+    cmake_pop_check_state()
+
     if(NOT TARGET Comedi::Comedi)
         add_library(Comedi::Comedi UNKNOWN IMPORTED)
         set_target_properties(Comedi::Comedi PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${COMEDI_INCLUDE_DIRS}")
 
-        if(COMEDI_LIBRARIES)
+        if(COMEDI_LIBRARY_RELEASE)
             set_property(TARGET Comedi::Comedi APPEND PROPERTY
-                IMPORTED_LOCATION "-l${COMEDI_LIBRARIES}")
+                IMPORTED_CONFIGURATIONS RELEASE)
+            set_target_properties(Comedi::Comedi PROPERTIES
+                IMPORTED_LOCATION_RELEASE "${COMEDI_LIBRARY_RELEASE}")
+        endif()
+
+        if(COMEDI_LIBRARY_DEBUG)
+            set_property(TARGET Comedi::Comedi APPEND PROPERTY
+                IMPORTED_CONFIGURATIONS DEBUG)
+            set_target_properties(Comedi::Comedi PROPERTIES
+                IMPORTED_LOCATION_DEBUG "${COMEDI_LIBRARY_DEBUG}")
+        endif()
+
+        if(NOT COMEDI_LIBRARY_RELEASE AND NOT COMEDI_LIBRARY_DEBUG)
+            set_property(TARGET Comedi::Comedi APPEND PROPERTY
+                IMPORTED_LOCATION "${COMEDI_LIBRARY}")
         endif()
     endif()
-    message(STATUS "Found Comedi ${COMEDI_VERSION}...")
 endif()
+
+mark_as_advanced(COMEDI_INCLUDE_DIR)
