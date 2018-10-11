@@ -1,17 +1,17 @@
-//  This file is part of ktimetracer.
+//  This file is part of ktimetrace.
 
-//  ktimetracer is free software: you can redistribute it and/or modify
+//  ktimetrace is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
 
-//  ktimetracer is distributed in the hope that it will be useful,
+//  ktimetrace is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 
 //  You should have received a copy of the GNU General Public License
-//  along with ktimetracer.  If not, see <https://www.gnu.org/licenses/>.
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
 
 //  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
 //  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
@@ -24,48 +24,14 @@
 
 // #include "dialog.h"
 // #include "bufferdialog.h"
-// #include "zoomdialog.h"
-// #include "ktracecolordialog.h"
+#include "zoomdialog.h"
+#include "ktracecolordialog.h"
 
 KTraceApp::KTraceApp()
 {
 	createActions();
 	createToolbars();
-
-	// init menu bar
-	// controlMenu = new QPopupMenu;
-	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("start", KIcon::Small), "Start aquisition", ID_START);
-	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("stop", KIcon::Small), "&Interrupt aquisition", ID_STOP);
-	// controlMenu->insertSeparator();
-	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("exit", KIcon::Toolbar), "E&xit", ID_QUIT);
-	// connect(controlMenu, SIGNAL(activated(int)), this, SLOT(commandCallback(int)));
-
-	// deviceMenu = new QPopupMenu;
-	// deviceMenu->setCheckable(true);
-	// deviceMenu->insertItem("/dev/comedi0", ID_COMEDI_0);
-	// deviceMenu->insertItem("/dev/comedi1", ID_COMEDI_1);
-	// deviceMenu->insertItem("/dev/comedi2", ID_COMEDI_2);
-	// deviceMenu->insertItem("/dev/comedi3", ID_COMEDI_3);
-	// connect(deviceMenu, SIGNAL(activated(int)), this, SLOT(commandCallback(int)));
-
-	// settingsMenu = new QPopupMenu;
-	// settingsMenu->insertItem("&Device", deviceMenu);
-	// settingsMenu->insertItem("Comedi &Buffer...", this, SLOT(slotBuffer()));
-
-	// viewMenu = new QPopupMenu;
-	// viewMenu->insertItem("&Colors...", this, SLOT(slotColors()));
-	// viewMenu->insertItem("&Zoom...", this, SLOT(slotZoom()));
-
-	// myHelpMenu = new QPopupMenu;
-	// myHelpMenu->insertItem(KGlobal::iconLoader()->loadIcon("contexthelp.xpm", KIcon::Small),
-	// 	"What's &This", this, SLOT(whatsThis()), SHIFT + Key_F1);
-	// myHelpMenu->insertSeparator();
-	// myHelpMenu->insertItem("&About...", this, SLOT(slotAbout()));
-
-	// menuBar()->insertItem("&Control", controlMenu);
-	// menuBar()->insertItem("&Settings", settingsMenu, ID_DEVICE_MENU);
-	// menuBar()->insertItem("&View", viewMenu, ID_VIEW_MENU);
-	// menuBar()->insertItem("&Help", myHelpMenu, ID_HELP_MENU);
+	createMenus();
 
 	// view = new KTraceView(this);
 	// view->loadConfig(kapp->config());
@@ -104,10 +70,10 @@ KTraceApp::KTraceApp()
 	// myToolBar->show();	// make sure toolbar is not hidden
 	// setControlsEnabled(false);
 
-	// // set timer up to update status led once per second
-	// statusTimer = new QTimer(this);
-	// statusTimer->start(1000);
-	// connect(statusTimer, SIGNAL(timeout()), SLOT(slotUpdateLED()));
+	// set timer up to update status led once per second
+	statusTimer = new QTimer(this);
+	statusTimer->start(1000);
+	connect(statusTimer, SIGNAL(timeout()), SLOT(slotUpdateLED()));
 }
 
 void KTraceApp::createActions() {
@@ -118,13 +84,58 @@ void KTraceApp::createActions() {
 	stopTraceAction = new QAction(QIcon(":/images/stop.png"), tr("stop"), this);
 	stopTraceAction->setStatusTip("Stop a time trace");
 	connect(stopTraceAction, SIGNAL(triggered()), this, SLOT(stopTrace()));
+
+	aboutAction = new QAction(tr("&About..."), this);
+	connect(aboutAction, SIGNAL(triggered()), this, SLOT(slotAbout()));
+
+	whatsThisAction = new QAction(tr("What's &This"), this);
+	connect(whatsThisAction, SIGNAL(triggered()), this, SLOT(whatsThis()));
+
+	colorsAction = new QAction(tr("&Colors"), this);
+	connect(colorsAction, SIGNAL(triggered()), this, SLOT(slotColors()));
+
+	zoomAction = new QAction(tr("&Zoom..."), this);
+	connect(zoomAction, SIGNAL(triggered()), this, SLOT(slotZoom()));
 }
 
 void KTraceApp::createToolbars() {
-	mainToolBar = addToolBar(tr("Activate"));
-	mainToolBar->setAllowedAreas(Qt::LeftToolBarArea);
+	mainToolBar = new QToolBar(this);
+	addToolBar(Qt::LeftToolBarArea, mainToolBar);
 	mainToolBar->addAction(startTraceAction);
 	mainToolBar->addAction(stopTraceAction);
+}
+
+void KTraceApp::createMenus() {
+	controlMenu = menuBar()->addMenu(tr("&Control"));
+	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("start", KIcon::Small), "Start aquisition", ID_START);
+	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("stop", KIcon::Small), "&Interrupt aquisition", ID_STOP);
+	// controlMenu->insertSeparator();
+	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("exit", KIcon::Toolbar), "E&xit", ID_QUIT);
+	// connect(controlMenu, SIGNAL(activated(int)), this, SLOT(commandCallback(int)));
+
+	settingsMenu = menuBar()->addMenu(tr("&Settings"));
+
+	//deviceMenu = menuBar()->addMenu(tr("&Ports"));
+	// deviceMenu = new QPopupMenu;
+	// deviceMenu->setCheckable(true);
+	// deviceMenu->insertItem("/dev/comedi0", ID_COMEDI_0);
+	// deviceMenu->insertItem("/dev/comedi1", ID_COMEDI_1);
+	// deviceMenu->insertItem("/dev/comedi2", ID_COMEDI_2);
+	// deviceMenu->insertItem("/dev/comedi3", ID_COMEDI_3);
+	// connect(deviceMenu, SIGNAL(activated(int)), this, SLOT(commandCallback(int)));
+
+	// settingsMenu = new QPopupMenu;
+	// settingsMenu->insertItem("&Device", deviceMenu);
+	// settingsMenu->insertItem("Comedi &Buffer...", this, SLOT(slotBuffer()));
+
+	viewMenu = menuBar()->addMenu(tr("&View"));
+	viewMenu->addAction(colorsAction);
+	viewMenu->addAction(zoomAction);
+
+	myHelpMenu = menuBar()->addMenu(tr("&Help"));
+	myHelpMenu->addAction(whatsThisAction);
+	myHelpMenu->addSeparator();
+	myHelpMenu->addAction(aboutAction);
 }
 
 void KTraceApp::defaultCaption()
@@ -167,7 +178,7 @@ bool KTraceApp::queryExit()
 {
 	// save configuration
 	//saveConfig();
-	
+
 	// wait until all file writing threads have finished
 	// if(data.writeDone() == false)
 	// {
@@ -240,29 +251,34 @@ void KTraceApp::slotBuffer()
 
 void KTraceApp::slotZoom()
 {
-	// ZoomDialog *dialog = new ZoomDialog(this);
+	ZoomDialog *dialog = new ZoomDialog(this);
 
-	// // initialize dialog with current zoom values
+	// initialize dialog with current zoom values
 	// dialog->hZoom(view->hZoom());
 	// if(dialog->exec())
 	// {
 	// 	// write new zoom value
 	// 	view->hZoom(dialog->hZoom());
 	// }
-	// delete dialog;
+
+	// if(dialog) {
+	// 	delete dialog;
+	// }
 }
 
 void KTraceApp::slotColors()
 {
-	// KTraceColorDialog *dialog = new KTraceColorDialog(this);
-	// dialog->fgColor(view->fgColor());
-	// dialog->bgColor(view->bgColor());
-	// if(dialog->exec())
-	// {
-	// 	view->fgColor(dialog->fgColor());
-	// 	view->bgColor(dialog->bgColor());
-	// }
-	// delete dialog;
+	KTraceColorDialog *dialog = new KTraceColorDialog(this);
+	dialog->fgColor(Qt::black /*view->fgColor()*/);
+	dialog->bgColor(Qt::white /*view->bgColor()*/);
+	if(dialog->exec())
+	{
+		//view->fgColor(dialog->fgColor());
+		//view->bgColor(dialog->bgColor());
+	}
+	if(dialog) {
+		delete dialog;
+	}
 }
 
 void KTraceApp::slotAbout()

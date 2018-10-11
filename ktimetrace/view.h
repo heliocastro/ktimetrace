@@ -22,15 +22,16 @@ KTraceView is the main class in charge of plotting data
 #ifndef VIEW_H
 #define VIEW_H
 
-class KTraceView;
-
 #include <kled.h>
 
-#include <qwidget.h>
-#include <qprogressbar.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qcolor.h>
+#include <QWidget>
+
+QT_BEGIN_NAMESPACE
+class QProgressBar;
+class QPushButton;
+class QLabel;
+class QColor;
+QT_END_NAMESPACE
 
 #include "data.h"
 #include "tracewidget.h"

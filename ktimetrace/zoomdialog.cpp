@@ -1,30 +1,31 @@
-/***************************************************************************
-                          zoomdialog.cpp  -  description
-                             -------------------
-    begin                : Fri Aug 10 2001
-    copyright            : (C) 2001 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  This file is part of ktimetrace.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
-#include <QtWidgets/QLineEdit>
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
+
+#include <QDialog>
 #include <QString>
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
 
 #include "zoomdialog.h"
 
-ZoomDialog::ZoomDialog(QWidget *parent, const char *name) :
-	QDialog(parent, name, true)
+ZoomDialog::ZoomDialog(QWidget *parent) :
+	QDialog(parent)
 {
 	const int hsep = 10, vsep = 10;
 
@@ -56,10 +57,6 @@ ZoomDialog::ZoomDialog(QWidget *parent, const char *name) :
 	connect(hZoomInput, SIGNAL(textChanged(const QString &)), SLOT(slotHZoomInput(const QString &)));
 	connect(okButton, SIGNAL(clicked()), SLOT(accept()));
 	connect(cancelButton, SIGNAL(clicked()), SLOT(reject()));
-}
-
-ZoomDialog::~ZoomDialog()
-{
 }
 
 float ZoomDialog::hZoom(float zoom)

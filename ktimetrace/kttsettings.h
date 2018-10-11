@@ -1,44 +1,42 @@
-/***************************************************************************
-                          kttsettings.h  -  description
-                             -------------------
-    begin                : Fri Aug 10 2001
-    copyright            : (C) 2001 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  This file is part of ktimetrace.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
 #ifndef KTTSETTINGS_H
 #define KTTSETTINGS_H
 
-#include <kconfig.h>
-
-#include <qdir.h>
-#include <qstring.h>
-
 #include <comedilib.h>
-/**
-  *@author Frank Mori Hess
-  */
+
+QT_BEGIN_NAMESPACE
+class QSettings;
+class QDir;
+class QString;
+QT_END_NAMESPACE
 
 enum FileFormat {TEXT, GZ_TEXT, BINARY};
 
 class KTTSettings {
-public: 
+public:
 	KTTSettings();
-	~KTTSettings();
+
 	/* saves settings to configuration file */
-	void saveConfig(KConfig*);
+	void saveConfig();
 	/* reads settings from configuration file */
-	void loadConfig(KConfig*);
+	void loadConfig();
 	// returns a full file name from directory, fileStem, fileNum and saveType members
 	QString fullFileName() const;
 	// returns full file name minus extension

@@ -1,41 +1,41 @@
-/***************************************************************************
-                          ktracecolordialog.h  -  description
-                             -------------------
-    begin                : Fri Sep 21 2001
-    copyright            : (C) 2001 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  This file is part of ktimetrace.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
 #ifndef KTRACECOLORDIALOG_H
 #define KTRACECOLORDIALOG_H
 
-#include <qdialog.h>
-#include <qpushbutton.h>
-#include <qwidget.h>
-#include <qcolor.h>
+#include <QDialog>
 
-/**
-  *@author Frank Mori Hess
-  */
+QT_BEGIN_NAMESPACE
+class QColor;
+class QPushButton;
+class QWidget;
+QT_END_NAMESPACE
 
 class KTraceColorDialog : public QDialog
 {
-Q_OBJECT
+	Q_OBJECT
+
 public:
-	KTraceColorDialog(QWidget *parent = 0, const char *name = 0);
-	~KTraceColorDialog();
+	KTraceColorDialog(QWidget *parent = 0);
 	QColor fgColor(QColor color = QColor());
 	QColor bgColor(QColor color = QColor());
+
 private:
 	QPushButton *foregroundColorButton;
 	QPushButton *backgroundColorButton;
@@ -45,6 +45,7 @@ private:
 	QPushButton *cancelButton;
 	QColor fgCol;
 	QColor bgCol;
+
 private slots:
 	void slotFgColor();
 	void slotBgColor();

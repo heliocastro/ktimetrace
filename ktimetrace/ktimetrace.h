@@ -1,17 +1,17 @@
-//  This file is part of ktimetracer.
+//  This file is part of ktimetrace.
 
-//  ktimetracer is free software: you can redistribute it and/or modify
+//  ktimetrace is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
 
-//  ktimetracer is distributed in the hope that it will be useful,
+//  ktimetrace is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 
 //  You should have received a copy of the GNU General Public License
-//  along with ktimetracer.  If not, see <https://www.gnu.org/licenses/>.
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
 
 //  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
 //  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
@@ -20,8 +20,6 @@
 #define KTRACEAPP_H
 
 #include <QMainWindow>
-
-
 
 //#include "data.h"
 //#include "resource.h"
@@ -53,21 +51,22 @@ protected:
 private:
 	void createActions();
 	void createToolbars();
+	void createMenus();
 	/* sets the /dev/comediX device we want to use */
 	int setDevice(unsigned int);
 	// save settings to confuration file
 	void saveConfig();
 
 	/* control menu on menubar */
-	QPopupMenu *controlMenu;
+	QMenu *controlMenu;
 	/* settings menu on menubar */
-	QPopupMenu *settingsMenu;
+	QMenu *settingsMenu;
 	/* device submenu in settings menu */
-	QPopupMenu *deviceMenu;
+	QMenu *deviceMenu;
 	/* view menu on menubar */
-	QPopupMenu *viewMenu;
+	QMenu *viewMenu;
 	/* help menu on menubar */
-	QPopupMenu *myHelpMenu;
+	QMenu *myHelpMenu;
 	/* the main graphical display widget */
 	//KTraceView *view;
 	/* our poorly thought-out catch-all class*/
@@ -80,6 +79,10 @@ private:
 	// Actions
 	QAction *startTraceAction;
 	QAction *stopTraceAction;
+	QAction *aboutAction;
+	QAction *whatsThisAction;
+	QAction *colorsAction;
+	QAction *zoomAction;
 
 	// Toolbars
 	QToolBar *mainToolBar;

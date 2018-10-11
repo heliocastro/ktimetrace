@@ -1,27 +1,29 @@
-/***************************************************************************
-                          kttsettings.cpp  -  description
-                             -------------------
-    begin                : Fri Aug 10 2001
-    copyright            : (C) 2001 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  This file is part of ktimetrace.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
+
+#include <QDir>
+#include <QSettings>
 
 #include "kttsettings.h"
-#include <comedilib.h>
 
 KTTSettings::KTTSettings()
 {
-	directory = QDir::homeDirPath();
+	directory = QDir::homePath();
 	fileStem = "temp";
 	fileNum = 0;
 	saveType = TEXT;
@@ -46,59 +48,58 @@ KTTSettings::KTTSettings()
 	saveData = true;
 }
 
-KTTSettings::~KTTSettings(){
+void KTTSettings::saveConfig()
+{
+	QSettings settings("KDE", "KTimeTrace");
+
+	settings.setValue("settings/saveData", saveData);
+	settings.setValue("settings/directory", directory.absolutePath());
+	settings.setValue("settings/fileNum", fileNum);
+	settings.setValue("settings/saveType", saveType);
+	settings.setValue("settings/fileStem", fileStem);
+	settings.setValue("settings/startTrigger", startTrigger);
+	settings.setValue("settings/scanTrigger", scanTrigger);
+	settings.setValue("settings/conversionTrigger", conversionTrigger);
+	settings.setValue("settings/stopTrigger", stopTrigger);
+	settings.setValue("settings/scanFrequency", scanFrequency);
+	settings.setValue("settings/conversionFrequency", conversionFrequency);
+	settings.setValue("settings/numScans", (int) numScans);
+	settings.setValue("settings/numChannels", (int) numChannels);
+	settings.setValue("settings/range", range);
+	settings.setValue("settings/reference", reference);
+	settings.setValue("settings/realTime", realTime);
+	settings.setValue("settings/lowLatency", lowLatency);
+	settings.setValue("settings/execAtStart", execAtStart);
+	settings.setValue("settings/startCommand", startCommand);
+	settings.setValue("settings/execAtEnd", execAtEnd);
+	settings.setValue("settings/endCommand", endCommand);
 }
 
-void KTTSettings::saveConfig(KConfig *config)
+void KTTSettings::loadConfig()
 {
-	config->setGroup("settings");
-	config->writeEntry("saveData", saveData);
-	config->writeEntry("directory", directory.absPath());
-	config->writeEntry("fileNum", fileNum);
-	config->writeEntry("saveType", saveType);
-	config->writeEntry("fileStem", fileStem);
-	config->writeEntry("startTrigger", startTrigger);
-	config->writeEntry("scanTrigger", scanTrigger);
-	config->writeEntry("conversionTrigger", conversionTrigger);
-	config->writeEntry("stopTrigger", stopTrigger);
-	config->writeEntry("scanFrequency", scanFrequency);
-	config->writeEntry("conversionFrequency", conversionFrequency);
-	config->writeEntry("numScans", numScans);
-	config->writeEntry("numChannels", (int) numChannels);
-	config->writeEntry("range", range);
-	config->writeEntry("reference", reference);
-	config->writeEntry("realTime", realTime);
-	config->writeEntry("lowLatency", lowLatency);
-	config->writeEntry("execAtStart", execAtStart);
-	config->writeEntry("startCommand", startCommand);
-	config->writeEntry("execAtEnd", execAtEnd);
-	config->writeEntry("endCommand", endCommand);
-}
+	QSettings settings("KDE", "KTimeTrace");
 
-void KTTSettings::loadConfig(KConfig *config)
-{
-	config->setGroup("settings");
-	saveData = config->readBoolEntry("saveData", saveData);
-	directory.setPath(config->readEntry("directory", directory.absPath()));
-	fileNum = config->readNumEntry("fileNum", fileNum);
-	fileStem = config->readEntry("fileStem", fileStem);
-	saveType = (FileFormat) config->readNumEntry("saveType", saveType);
-	startTrigger = config->readNumEntry("startTrigger", startTrigger);
-	scanTrigger = config->readNumEntry("scanTrigger", scanTrigger);
-	conversionTrigger = config->readNumEntry("conversionTrigger", conversionTrigger);
-	stopTrigger = config->readNumEntry("stopTrigger", stopTrigger);
-	scanFrequency = config->readDoubleNumEntry("scanFrequency", scanFrequency);
-	conversionFrequency = config->readDoubleNumEntry("conversionFrequency", conversionFrequency);
-	numScans = config->readUnsignedLongNumEntry("numScans", numScans);
-	numChannels = config->readNumEntry("numChannels", numChannels);
-	range = config->readNumEntry("range", range);
-	reference = config->readNumEntry("reference", reference);
-	realTime = config->readBoolEntry("realTime", realTime);
-	lowLatency = config->readBoolEntry("lowLatency", lowLatency);
-	execAtStart = config->readBoolEntry("execAtStart", execAtStart);
-	startCommand = config->readEntry("startCommand", startCommand);
-	execAtEnd = config->readBoolEntry("execAtEnd", execAtEnd);
-	endCommand = config->readEntry("endCommand", endCommand);
+	saveData = settings.value("settings/saveData", saveData).toBool();
+	directory.setPath(settings.value("settings/directory", directory.absolutePath()).toString());
+	fileNum = settings.value("settings/fileNum", fileNum).toInt();
+	fileStem = settings.value("settings/fileStem", fileStem).toString();
+	saveType = (FileFormat) settings.value("settings/saveType", saveType).toInt();
+	startTrigger = settings.value("settings/startTrigger", startTrigger).toInt();
+	scanTrigger = settings.value("settings/scanTrigger", scanTrigger).toInt();
+	conversionTrigger = settings.value("settings/conversionTrigger", conversionTrigger).toInt();
+	stopTrigger = settings.value("settings/stopTrigger", stopTrigger).toInt();
+	scanFrequency = settings.value("settings/scanFrequency", scanFrequency).toInt();
+	conversionFrequency = settings.value("settings/conversionFrequency", conversionFrequency).toInt();
+	numScans = settings.value("settings/numScans", (int) numScans).toInt();
+	numChannels = settings.value("settings/numChannels", numChannels).toInt();
+	range = settings.value("settings/range", range).toInt();
+	reference = settings.value("settings/reference", reference).toInt();
+	realTime = settings.value("settings/realTime", realTime).toBool();
+	lowLatency = settings.value("settings/lowLatency", lowLatency).toBool();
+	execAtStart = settings.value("settings/execAtStart", execAtStart).toBool();
+	startCommand = settings.value("settings/startCommand", startCommand).toString();
+	execAtEnd = settings.value("settings/execAtEnd", execAtEnd).toBool();
+	endCommand = settings.value("settings/endCommand", endCommand).toString();
 }
 
 QString KTTSettings::fullFileName() const
@@ -109,8 +110,7 @@ QString KTTSettings::fullFileName() const
 QString KTTSettings::fullFileStem() const
 {
 	QString name;
-	name.sprintf("%s/%s%.3i", (const char*) directory.absPath(),
-		(const char*) fileStem, fileNum);
+	name.sprintf("%s/%s%.3i", directory.absolutePath(), fileStem, fileNum);
 	return name;
 }
 
