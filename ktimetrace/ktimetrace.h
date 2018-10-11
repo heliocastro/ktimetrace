@@ -21,18 +21,25 @@
 
 #include <QMainWindow>
 
+
+
 //#include "data.h"
 //#include "resource.h"
 
+QT_BEGIN_NAMESPACE
+class QAction;
 class QPopupMenu;
 class QTimer;
+class QToolBar;
+QT_END_NAMESPACE
 
 class KTraceApp : public QMainWindow
 {
 	Q_OBJECT
+
 public:
 	KTraceApp();
-	~KTraceApp();
+
 	/* creates a caption for the main window and displays it */
 	void defaultCaption();
 	/* our daq card object - this shouldn't need to be public! */
@@ -45,6 +52,7 @@ protected:
 	virtual bool queryExit();
 private:
 	void createActions();
+	void createToolbars();
 	/* sets the /dev/comediX device we want to use */
 	int setDevice(unsigned int);
 	// save settings to confuration file
@@ -68,6 +76,14 @@ private:
 	QTimer *statusTimer;
 	/* total number of possible /dev/comediX files */
 	static const unsigned int maxDev = 4;
+
+	// Actions
+	QAction *startTraceAction;
+	QAction *stopTraceAction;
+
+	// Toolbars
+	QToolBar *mainToolBar;
+
 private slots:
 	void startTrace();
 	void stopTrace();

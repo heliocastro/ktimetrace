@@ -30,6 +30,7 @@
 KTraceApp::KTraceApp()
 {
 	createActions();
+	createToolbars();
 
 	// init menu bar
 	// controlMenu = new QPopupMenu;
@@ -105,27 +106,25 @@ KTraceApp::KTraceApp()
 
 	// // set timer up to update status led once per second
 	// statusTimer = new QTimer(this);
-	// statusTimer->start(1000);	
+	// statusTimer->start(1000);
 	// connect(statusTimer, SIGNAL(timeout()), SLOT(slotUpdateLED()));
 }
 
 void KTraceApp::createActions() {
-	QToolBar *myToolBar = addToolBar(tr("Activate"));
+	startTraceAction = new QAction(QIcon(":/images/start.png"), tr("start"), this);
+	startTraceAction->setStatusTip("Start a time trace");
+	connect(startTraceAction, SIGNAL(triggered()), this, SLOT(startTrace()));
 
-	const QIcon startIcon = QIcon(":../images/start.png");
-	QAction *newAct = new QAction(startIcon, tr("start"), this);
-	newAct->setStatusTip("Start a time trace");
-	connect(newAct, &QAction::triggered, this, &KTraceApp::startTrace);
-
-	const QIcon stopIcon = QIcon(":../images/stop.png");
-	newAct = new QAction(stopIcon, tr("stop"), this);
-	newAct->setStatusTip("Stop time trace");
-	connect(newAct, &QAction::triggered, this, &KTraceApp::stopTrace);
+	stopTraceAction = new QAction(QIcon(":/images/stop.png"), tr("stop"), this);
+	stopTraceAction->setStatusTip("Stop a time trace");
+	connect(stopTraceAction, SIGNAL(triggered()), this, SLOT(stopTrace()));
 }
 
-KTraceApp::~KTraceApp()
-{
-	delete deviceMenu;
+void KTraceApp::createToolbars() {
+	mainToolBar = addToolBar(tr("Activate"));
+	mainToolBar->setAllowedAreas(Qt::LeftToolBarArea);
+	mainToolBar->addAction(startTraceAction);
+	mainToolBar->addAction(stopTraceAction);
 }
 
 void KTraceApp::defaultCaption()
@@ -161,7 +160,7 @@ bool KTraceApp::queryClose()
 	// 		"This may cause a delay before the application closes.");
 	// }
 
-	// return true;
+	return true;
 }
 
 bool KTraceApp::queryExit()
@@ -321,6 +320,7 @@ int KTraceApp::setDevice(unsigned int devNum)
 	// 	return -1;
 	// }
 	// return devNum;
+	return 0;
 }
 
 void KTraceApp::saveConfig()

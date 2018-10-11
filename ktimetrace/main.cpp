@@ -38,11 +38,14 @@ void customNewHandler()
 
 int main(int argc, char *argv[])
 {
+	Q_INIT_RESOURCE(ktimetrace);
+
 	std::set_new_handler(customNewHandler);
 
 	QApplication app(argc, argv);
-  
+
 	KTraceApp ktimetrace;
+	ktimetrace.setGeometry(0, 0, 640, 480);
 	ktimetrace.show();
 
 	return app.exec();
