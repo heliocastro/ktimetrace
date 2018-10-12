@@ -1,38 +1,29 @@
-/***************************************************************************
-                          adc.h  -  description
-                             -------------------
+//  This file is part of ktimetrace.
 
-	The adc class represents the analog-to-digital converter card being
-	used to collect data.  It needs a driver for the card provided by
-	the 'comedi' project (see http://stm.lbl.gov/comedi/ ).
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
-    begin                : Fri Dec 15 2000
-    copyright            : (C) 2000 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
 #ifndef ADC_H
 #define ADC_H
 
-#include <qstring.h>
-
 #include <unistd.h>
 #include <pthread.h>
-
 #include <comedilib.h>
 
-/**
-  *@author Frank Mori Hess
-  */
+#include <QString>
 
 
 class adc
@@ -47,7 +38,7 @@ public:
 	 * it may be used or ignored by the comedi driver depending on which card/driver is used.
 	 * This function has more arguments than I like, will probably be broken up into smaller
 	 * functions at some time in the future.
-	 */	
+	 */
 	int start(unsigned int numScans = 0, unsigned int endChannel = 0, unsigned int startChannel = 0);
 	/* stop taking data*/
 	void stop();

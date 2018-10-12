@@ -15,18 +15,16 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "view.h"
-
-#include <kapp.h>
-#include <kicontheme.h>
-#include <kiconloader.h>
-#include <kglobal.h>
-
-#include <qwhatsthis.h>
-
 #include <cmath>
 
-KTraceView::KTraceView(QWidget *parent, const char *name) : QWidget(parent, name)
+#include <QProgressBar>
+#include <QWhatsThis>
+#include <QPushButton>
+#include <QLabel>
+
+#include "view.h"
+
+KTraceView::KTraceView(QWidget *parent) : QWidget(parent)
 {
 	const int ledSize = 16;
 	const int buttonBorder = 6;
@@ -36,46 +34,47 @@ KTraceView::KTraceView(QWidget *parent, const char *name) : QWidget(parent, name
 	horizontalZoom = 1.0;
 	numWindows = 0;
 	traceWindowWidth = 0;
-	fgCol = black;
-	bgCol = white;
+	fgCol = Qt::black;
+	bgCol = Qt::white;
 
 	lowerPanel = new QWidget(this);
 
-	progressBar = new QProgressBar(100, lowerPanel);
+	progressBar = new QProgressBar(lowerPanel);
+	progressBar->setRange(0, 100);
 
 	writeStatusIndicator = new KLed(lowerPanel);
 	writeStatusIndicator->setLook(KLed::Sunken);
 	writeStatusIndicator->off();
-	writeStatusIndicator->setColor(white);
+	writeStatusIndicator->setColor(Qt::white);
 	writeStatusIndicator->resize(ledSize, ledSize);
-	QWhatsThis::add(writeStatusIndicator, "Indicates how many file writes are being processed "
-		"in the background.  Green means one, yellow means two, and red means three or more.");
+	// QWhatsThis::add(writeStatusIndicator, "Indicates how many file writes are being processed "
+	// 	"in the background.  Green means one, yellow means two, and red means three or more.");
 
 	deviceStatusIndicator = new KLed(lowerPanel);
 	deviceStatusIndicator->setLook(KLed::Sunken);
 	deviceStatusIndicator->off();
-	deviceStatusIndicator->setColor(white);
+	deviceStatusIndicator->setColor(Qt::white);
 	deviceStatusIndicator->resize(ledSize, ledSize);
-	QWhatsThis::add(deviceStatusIndicator, "Indicates whether or not we have a working "
-		"analog input device currently open.");
+	// QWhatsThis::add(deviceStatusIndicator, "Indicates whether or not we have a working "
+	// 	"analog input device currently open.");
 
 	zoomInButton = new QPushButton(lowerPanel);
-	zoomInButton->setPixmap(KGlobal::iconLoader()->loadIcon("viewmag+", KIcon::Toolbar));
-	zoomInButton->resize(zoomInButton->pixmap()->width() + buttonBorder,
-		zoomInButton->pixmap()->height() + buttonBorder);
+	// zoomInButton->setPixmap(KGlobal::iconLoader()->loadIcon("viewmag+", KIcon::Toolbar));
+	// zoomInButton->resize(zoomInButton->pixmap()->width() + buttonBorder,
+	// 	zoomInButton->pixmap()->height() + buttonBorder);
 	connect(zoomInButton, SIGNAL(clicked()), SLOT(slotHZoomIn()));
-	QWhatsThis::add(zoomInButton, "Horinzontal zoom in.");
+	// QWhatsThis::add(zoomInButton, "Horinzontal zoom in.");
 
 	zoomOutButton = new QPushButton(lowerPanel);
-	zoomOutButton->setPixmap(KGlobal::iconLoader()->loadIcon("viewmag-", KIcon::Toolbar));
-	zoomOutButton->resize(zoomOutButton->pixmap()->width() + buttonBorder,
-		zoomOutButton->pixmap()->height() + buttonBorder);
+	// zoomOutButton->setPixmap(KGlobal::iconLoader()->loadIcon("viewmag-", KIcon::Toolbar));
+	// zoomOutButton->resize(zoomOutButton->pixmap()->width() + buttonBorder,
+	// 	zoomOutButton->pixmap()->height() + buttonBorder);
 	connect(zoomOutButton, SIGNAL(clicked()), SLOT(slotHZoomOut()));
-	QWhatsThis::add(zoomOutButton, "Horizontal zoom out.");
+	// QWhatsThis::add(zoomOutButton, "Horizontal zoom out.");
 
 	zoomDisplay = new QLabel(lowerPanel);
-	QWhatsThis::add(zoomDisplay,
-		"Indicates the number of samples that will fit in the current display.");
+	// QWhatsThis::add(zoomDisplay,
+	// 	"Indicates the number of samples that will fit in the current display.");
 
 	createWindows(1);
 }
@@ -107,7 +106,7 @@ void KTraceView::createWindows(unsigned int n)
 		trace[i]->blockMode(bMode);
 		trace[i]->hZoom(horizontalZoom);
 		trace[i]->setPlottingColor(fgCol);
-		trace[i]->setBackgroundColor(bgCol);
+		//trace[i]->setBackgroundColor(bgCol);
 	}
 	resizeEvent(0);
 	progressBar->reset();
@@ -123,37 +122,37 @@ unsigned int KTraceView::fullScale(unsigned int scale)
 	return fScale;
 }
 
-void KTraceView::saveConfig(KConfig *config)
+void KTraceView::saveConfig()
 {
-	config->setGroup("view settings");
-	config->writeEntry("horizontalZoom", horizontalZoom);
-	config->writeEntry("fgRed", fgCol.red());
-	config->writeEntry("fgGreen", fgCol.green());
-	config->writeEntry("fgBlue", fgCol.blue());
-	config->writeEntry("bgRed", bgCol.red());
-	config->writeEntry("bgGreen", bgCol.green());
-	config->writeEntry("bgBlue", bgCol.blue());
+	// config->setGroup("view settings");
+	// config->writeEntry("horizontalZoom", horizontalZoom);
+	// config->writeEntry("fgRed", fgCol.red());
+	// config->writeEntry("fgGreen", fgCol.green());
+	// config->writeEntry("fgBlue", fgCol.blue());
+	// config->writeEntry("bgRed", bgCol.red());
+	// config->writeEntry("bgGreen", bgCol.green());
+	// config->writeEntry("bgBlue", bgCol.blue());
 }
 
-void KTraceView::loadConfig(KConfig *config)
+void KTraceView::loadConfig()
 {
 	QColor color;
 	int red, green, blue;
 
-	config->setGroup("view settings");
-	hZoom(config->readDoubleNumEntry("horizontalZoom", horizontalZoom));
-	// load foreground color
-	red = config->readNumEntry("fgRed", fgCol.red());
-	green = config->readNumEntry("fgGreen", fgCol.green());
-	blue = config->readNumEntry("fgBlue", fgCol.blue());
-	color.setRgb(red, green, blue);
-	fgColor(color);
-	// load background color
-	red = config->readNumEntry("bgRed", bgCol.red());
-	green = config->readNumEntry("bgGreen", bgCol.green());
-	blue = config->readNumEntry("bgBlue", bgCol.blue());
-	color.setRgb(red, green, blue);
-	bgColor(color);
+	// config->setGroup("view settings");
+	// hZoom(config->readDoubleNumEntry("horizontalZoom", horizontalZoom));
+	// // load foreground color
+	// red = config->readNumEntry("fgRed", fgCol.red());
+	// green = config->readNumEntry("fgGreen", fgCol.green());
+	// blue = config->readNumEntry("fgBlue", fgCol.blue());
+	// color.setRgb(red, green, blue);
+	// fgColor(color);
+	// // load background color
+	// red = config->readNumEntry("bgRed", bgCol.red());
+	// green = config->readNumEntry("bgGreen", bgCol.green());
+	// blue = config->readNumEntry("bgBlue", bgCol.blue());
+	// color.setRgb(red, green, blue);
+	// bgColor(color);
 }
 
 bool KTraceView::blockMode(bool on)
@@ -168,7 +167,7 @@ bool KTraceView::blockMode(bool on)
 
 void KTraceView::setProgress(int progress)
 {
-	progressBar->setProgress(progress);
+	progressBar->setValue(progress);
 }
 
 void KTraceView::setWriteIndicator(unsigned int writeCount)
@@ -179,19 +178,19 @@ void KTraceView::setWriteIndicator(unsigned int writeCount)
 	{
 		case 0:
 			writeStatusIndicator->off();
-			statusColor = white;
+			statusColor = Qt::white;
 			break;
 		case 1:
 			writeStatusIndicator->on();
-			statusColor = green;
+			statusColor = Qt::green;
 			break;
 		case 2:
 			writeStatusIndicator->on();
-			statusColor = yellow;
+			statusColor = Qt::yellow;
 			break;
 		default:
 			writeStatusIndicator->on();
-			statusColor = red;
+			statusColor = Qt::red;
 			break;
 	}
 	writeStatusIndicator->setColor(statusColor);
@@ -201,9 +200,9 @@ void KTraceView::setWriteIndicator(unsigned int writeCount)
 void KTraceView::setDeviceIndicator(bool good)
 {
 	if(good)
-		deviceStatusIndicator->setColor(green);
+		deviceStatusIndicator->setColor(Qt::green);
 	else
-		deviceStatusIndicator->setColor(red);
+		deviceStatusIndicator->setColor(Qt::red);
 
 	deviceStatusIndicator->on();
 	return;
@@ -253,7 +252,7 @@ QColor KTraceView::bgColor(QColor color)
 	bgCol = color;
 	for(unsigned int i = 0; i < numWindows; i++)
 	{
-		trace[i]->setBackgroundColor(bgCol);
+		//trace[i]->setBackgroundColor(bgCol);
 	}
 	return bgCol;
 }

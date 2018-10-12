@@ -1,30 +1,28 @@
-/***************************************************************************
-                          view.h  -  description
-                             -------------------
+//  This file is part of ktimetracer.
 
-KTraceView is the main class in charge of plotting data
+//  ktimetracer is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
+//  ktimetracer is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 
-    begin                : Tue May 23 17:09:23 CDT 2000
-    copyright            : (C) 2000 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetracer.  If not, see <https://www.gnu.org/licenses/>.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org># This file is part of ktimetracer.
+
 
 #ifndef VIEW_H
 #define VIEW_H
 
-#include <kled.h>
-
 #include <QWidget>
+
+#include "kled.h"
 
 QT_BEGIN_NAMESPACE
 class QProgressBar;
@@ -41,19 +39,19 @@ class KTraceView : public QWidget
 {
 Q_OBJECT
 public:
-	KTraceView(QWidget *parent = 0, const char *name = 0);
+	KTraceView(QWidget *parent = 0);
 	~KTraceView();
-	/* creates up to 8 windows (TraceWidgets) for plotting data in */	
+	/* creates up to 8 windows (TraceWidgets) for plotting data in */
 	void createWindows(unsigned int n);
 	/* inputs data to be plotted */
 	inline void input(sampl_t data, unsigned int channel);
 	/* sets/returns scale. It's the data value that corresponds to card's
-	 * full scale (4095 for 12 bit card) */	
+	 * full scale (4095 for 12 bit card) */
 	unsigned int fullScale(unsigned int scale);
-	// save configuration to config file	
-	void saveConfig(KConfig *config);
-	// load configuration from config file	
-	void loadConfig(KConfig *config);
+	// save configuration to config file
+	void saveConfig();
+	// load configuration from config file
+	void loadConfig();
 	/* plot by screen size blocks or continuously */
 	bool blockMode(bool);
 	/* set progress of QProgressBar*/

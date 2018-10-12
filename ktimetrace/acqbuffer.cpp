@@ -16,15 +16,17 @@
 //  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
 //  (C) 2018 by Helio Chissini de Castro <helio@kde.org># This file is part of ktimetracer.
 
-#include "acqbuffer.h"
-#include <kapp.h>
-#include <errno.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdint>
 #include <unistd.h>
 #include <sys/types.h>
-#include <qdir.h>
-#include <stdio.h>
 #include <math.h>
-#include <stdint.h>
+
+
+#include <QDir>
+
+#include "acqbuffer.h"
 
 AcqBuffer::AcqBuffer(adc *adcPtr)
 {
@@ -233,7 +235,7 @@ int AcqBuffer::saveToDisk(bool save)
 	if(save == false && tempFile != NULL)
 	{
 		fclose(tempFile);
-		tempFile = NULL;	
+		tempFile = NULL;
 	}
 
 	return 0;

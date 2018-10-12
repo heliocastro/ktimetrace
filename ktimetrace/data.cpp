@@ -214,14 +214,14 @@ void KTTEngine::setView(KTraceView *viewPtr)
 	view = viewPtr;
 }
 
-void KTTEngine::saveConfig(KConfig *config)
+void KTTEngine::saveConfig()
 {
-	settings.saveConfig(config);
+	settings.saveConfig();
 }
 
-void KTTEngine::loadConfig(KConfig *config)
+void KTTEngine::loadConfig()
 {
-	settings.loadConfig(config);
+	settings.loadConfig();
 }
 
 void KTTEngine::aquireData()

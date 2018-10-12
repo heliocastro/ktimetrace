@@ -1,34 +1,31 @@
-/***************************************************************************
-                          adc.cpp  -  description
-                             -------------------
-    begin                : Fri Dec 15 2000
-    copyright            : (C) 2000 by Frank Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  This file is part of ktimetrace.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
 #include "adc.h"
 #include "resource.h"
 
-#include <comedilib.h>
-
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <iostream>
 #include <math.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <limits.h>
-
-#include <qstring.h>
+#include <cstdlib>
+#include <climits>
 
 using namespace std;
 
@@ -64,17 +61,17 @@ int adc::setDevice(unsigned int devNum)
 	devPath.setNum(devNum);
 	devPath = "/dev/comedi" + devPath;
 
-	dev = comedi_open(devPath);
+	dev = comedi_open(devPath.toLocal8Bit());
 	if(!dev)
 	{
-		perror(devPath);
+		perror(devPath.toLocal8Bit());
 		return -1;
 	}
 
 	subDev = comedi_find_subdevice_by_type(dev, COMEDI_SUBD_AI, 0);
 	if(subDev < 0)
 	{
-		cerr << "No analog input subdevice found on " << devPath << std::endl;
+		cerr << "No analog input subdevice found on " << devPath.toStdString() << std::endl;
 		return -1;
 	}
 
@@ -160,7 +157,7 @@ int adc::start(unsigned int numScans, unsigned int endChannel, unsigned int star
 	{
 		cmd.stop_arg = 0;
 	}
-	cmd.flags = flags;	
+	cmd.flags = flags;
 
 	// set up channel / gain list
 	chanList = new unsigned int[numChannels];
@@ -186,7 +183,7 @@ int adc::start(unsigned int numScans, unsigned int endChannel, unsigned int star
 		return ret;
 	}
 
-	// give it another test pass to fix up arguments if necessary	
+	// give it another test pass to fix up arguments if necessary
 	comedi_command_test(dev, &cmd);
 
 	ret = comedi_command(dev, &cmd);
@@ -197,7 +194,7 @@ int adc::start(unsigned int numScans, unsigned int endChannel, unsigned int star
 		delete [] chanList;
 		return -1;
 	}
-	
+
 	delete [] chanList;
 
 	// read back actual timings used
@@ -225,7 +222,7 @@ ssize_t adc::read(void *buffer, size_t size)
 
 int adc::poll()
 {
-	if(goodFlag)	
+	if(goodFlag)
 		return comedi_poll(dev, subDev);
 
 	return -1;
@@ -336,7 +333,6 @@ int adc::defaultTrigger(int mask, int suggestion)
 
 unsigned int adc::defaultReference(unsigned int subdevFlags, unsigned int suggestion)
 {
-	
 	// use the suggested trigger mask if any are supported
 	switch(suggestion)
 	{

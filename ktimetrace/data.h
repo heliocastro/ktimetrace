@@ -56,9 +56,9 @@ public:
 	/* sets the KTraceView we are using to display data */
 	void setView(KTraceView *viewPtr);
 	/* saves settings to configuration file */
-	void saveConfig(KConfig*);
+	void saveConfig();
 	/* reads settings from configuration file */
-	void loadConfig(KConfig*);
+	void loadConfig();
 	/* writes data files to disk */
 	int writeFiles(KTTSettings settings, AcqBuffer *buf);
 	// aquires data from card and puts it in dataFifo.  called by aquisition thread

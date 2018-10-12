@@ -109,8 +109,7 @@ QString KTTSettings::fullFileName() const
 
 QString KTTSettings::fullFileStem() const
 {
-	QString name;
-	name.sprintf("%s/%s%.3i", directory.absolutePath(), fileStem, fileNum);
+	QString name = directory.absolutePath() + '/' + fileStem + '.' +  fileNum;
 	return name;
 }
 

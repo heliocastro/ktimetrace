@@ -17,16 +17,17 @@
 
 set(KTIMETRACE_SRCS
     main.cpp
-    # acqbuffer.cpp
-    # adc.cpp
+    acqbuffer.cpp
+    adc.cpp
     # bufferdialog.cpp
-    # data.cpp
+    data.cpp
     # dialog.cpp
+    kled.cpp
     ktimetrace.cpp
     ktracecolordialog.cpp
     kttsettings.cpp
     # tracewidget.cpp
-    # view.cpp
+    view.cpp
     zoomdialog.cpp
     )
 
