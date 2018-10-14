@@ -19,11 +19,12 @@
 #ifndef KTTSETTINGS_H
 #define KTTSETTINGS_H
 
+#include <QDir>
+
 #include <comedilib.h>
 
 QT_BEGIN_NAMESPACE
 class QSettings;
-class QDir;
 class QString;
 QT_END_NAMESPACE
 

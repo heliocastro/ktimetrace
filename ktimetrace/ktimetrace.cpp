@@ -22,8 +22,9 @@
 
 #include "ktimetrace.h"
 
-// #include "dialog.h"
-// #include "bufferdialog.h"
+#include "dialog.h"
+#include "bufferdialog.h"
+#include "view.h"
 #include "zoomdialog.h"
 #include "ktracecolordialog.h"
 
@@ -33,42 +34,39 @@ KTraceApp::KTraceApp()
 	createToolbars();
 	createMenus();
 
-	// view = new KTraceView(this);
-	// view->loadConfig(kapp->config());
-	// setCentralWidget(view);
+	view = new KTraceView(this);
+	view->loadConfig();
+	setCentralWidget(view);
 
-	// data.ADC(&dataCard);
-	// data.loadConfig(kapp->config());
-	// data.setView(view);
+	data.ADC(&dataCard);
+	data.loadConfig();
+	data.setView(view);
 
-	// // look for an analog input device
-	// unsigned int i;
-	// for(i = 0; i < maxDev; i++)
-	// {
-	// 	if(data.setDevice(i) == 0)
-	// 	{
-	// 		deviceMenu->setItemChecked(deviceMenu->idAt(i), true);
-	// 		view->fullScale(dataCard.maxData());
-	// 		break;
-	// 	}
-	// }
-	// // if we failed to find any good analog inputs
-	// if(i == maxDev)
-	// {
-	// 	static QMessageBox warning("Warning",
-	// 		"No available asynchronous analog input subdevices were found.\n"
-	// 		PACKAGE " will not function.", QMessageBox::Warning,
-	// 		QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton,
-	// 		this);
-	// 	QTimer::singleShot(0, &warning , SLOT( show() ) );
-	// }
-
-	// setCaption(PACKAGE " " VERSION);
+	// look for an analog input device
+	unsigned int i;
+	for(i = 0; i < maxDev; i++)
+	{
+		if(data.setDevice(i) == 0)
+		{
+			dynamic_cast<QAction*>(devicesActionList[i])->setChecked(true);
+			view->fullScale(dataCard.maxData());
+			break;
+		}
+	}
+	// if we failed to find any good analog inputs
+	if(i == maxDev)
+	{
+		static QMessageBox warning("Warning",
+			"No available asynchronous analog input subdevices were found.\n"
+			"KTimeTrace will not function.", QMessageBox::Warning,
+			QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton,
+			this);
+		QTimer::singleShot(0, &warning , SLOT( show() ) );
+	}
 
 	// // initialize state of various menu options and toolbar buttons
 	// applyMainWindowSettings(kapp->config(), "window");
-	// myToolBar->show();	// make sure toolbar is not hidden
-	// setControlsEnabled(false);
+	setControlsEnabled(false);
 
 	// set timer up to update status led once per second
 	statusTimer = new QTimer(this);
@@ -89,13 +87,27 @@ void KTraceApp::createActions() {
 	connect(aboutAction, SIGNAL(triggered()), this, SLOT(slotAbout()));
 
 	whatsThisAction = new QAction(tr("What's &This"), this);
-	connect(whatsThisAction, SIGNAL(triggered()), this, SLOT(whatsThis()));
+	connect(whatsThisAction, SIGNAL(triggered()), this, SLOT(WhatsThis()));
 
 	colorsAction = new QAction(tr("&Colors"), this);
 	connect(colorsAction, SIGNAL(triggered()), this, SLOT(slotColors()));
 
 	zoomAction = new QAction(tr("&Zoom..."), this);
 	connect(zoomAction, SIGNAL(triggered()), this, SLOT(slotZoom()));
+
+	exitAction = new QAction(tr("E&xit"), this);
+	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+
+	for(int dev=0; dev <= 3; dev++) {
+		QString name = "/dev/comedi" + QString::number(dev);
+		QAction *act = new QAction(name, this);
+		act->setCheckable(true);
+		connect(act, SIGNAL(toggled(bool)), this, SLOT(commandCallback()));
+		devicesActionList.append(act);
+	}
+
+	bufferAction = new QAction("Comedi &Buffer...", this);
+	connect(bufferAction, SIGNAL(triggered()), this, SLOT(slotBuffer()));
 }
 
 void KTraceApp::createToolbars() {
@@ -109,24 +121,17 @@ void KTraceApp::createMenus() {
 	controlMenu = menuBar()->addMenu(tr("&Control"));
 	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("start", KIcon::Small), "Start aquisition", ID_START);
 	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("stop", KIcon::Small), "&Interrupt aquisition", ID_STOP);
-	// controlMenu->insertSeparator();
-	// controlMenu->insertItem(KGlobal::iconLoader()->loadIcon("exit", KIcon::Toolbar), "E&xit", ID_QUIT);
-	// connect(controlMenu, SIGNAL(activated(int)), this, SLOT(commandCallback(int)));
+	controlMenu->addSeparator();
+	controlMenu->addAction(exitAction);
 
 	settingsMenu = menuBar()->addMenu(tr("&Settings"));
 
-	//deviceMenu = menuBar()->addMenu(tr("&Ports"));
-	// deviceMenu = new QPopupMenu;
-	// deviceMenu->setCheckable(true);
-	// deviceMenu->insertItem("/dev/comedi0", ID_COMEDI_0);
-	// deviceMenu->insertItem("/dev/comedi1", ID_COMEDI_1);
-	// deviceMenu->insertItem("/dev/comedi2", ID_COMEDI_2);
-	// deviceMenu->insertItem("/dev/comedi3", ID_COMEDI_3);
-	// connect(deviceMenu, SIGNAL(activated(int)), this, SLOT(commandCallback(int)));
+	deviceMenu = settingsMenu->addMenu(tr("&Ports"));
+	for(int i = 0; i < devicesActionList.size(); ++i) {
+		deviceMenu->addAction(devicesActionList[i]);
+	}
 
-	// settingsMenu = new QPopupMenu;
-	// settingsMenu->insertItem("&Device", deviceMenu);
-	// settingsMenu->insertItem("Comedi &Buffer...", this, SLOT(slotBuffer()));
+	settingsMenu->addAction(bufferAction);
 
 	viewMenu = menuBar()->addMenu(tr("&View"));
 	viewMenu->addAction(colorsAction);
@@ -163,61 +168,58 @@ void KTraceApp::defaultCaption()
 
 bool KTraceApp::queryClose()
 {
-	// if(data.writeDone() == false)
-	// {
-	// 	data.stop();
-	// 	QMessageBox::information(this, "Information",
-	// 		"Writing of data files is still in progress.\n"
-	// 		"This may cause a delay before the application closes.");
-	// }
+	if(data.writeDone() == false)
+	{
+		data.stop();
+		QMessageBox::information(this, "Information",
+			"Writing of data files is still in progress.\n"
+			"This may cause a delay before the application closes.");
+	}
 
 	return true;
 }
 
-bool KTraceApp::queryExit()
+void KTraceApp::queryExit()
 {
 	// save configuration
-	//saveConfig();
+	saveConfig();
 
 	// wait until all file writing threads have finished
-	// if(data.writeDone() == false)
-	// {
-	// 	std::cerr << "waiting for data file save to complete..." << std::endl;
-	// 	while(data.writeDone() == false)
-	// 	{
-	// 		usleep(100000);
-	// 	}
-	// 	std::cerr << "data save completed" << std::endl;
-	// }
-	// // work-around for qt bug
-	// exit(0);
+	if(data.writeDone() == false)
+	{
+		std::cerr << "waiting for data file save to complete..." << std::endl;
+		while(data.writeDone() == false)
+		{
+			usleep(100000);
+		}
+		std::cerr << "data save completed" << std::endl;
+	}
 
-	return true;
+	QCoreApplication::quit();
 }
 
 void KTraceApp::startTrace()
 {
-	// if(dataCard.good() == false)
-	// {
-	// 	QMessageBox::warning(this, "Warning",
-	// 		"No analog input device is configured");
-	// 	return;
-	// }
-	// KTraceDialog *dialog = new KTraceDialog(data.settings, &dataCard, this);
-	// if(dialog->exec())
-	// {
-	// 	setControlsEnabled(true);
-	// 	data.settings = *dialog->settings;
-	// 	defaultCaption();
-	// 	data.collect();
-	// }
-	// delete dialog;
-	// return;
+	if(dataCard.good() == false)
+	{
+		QMessageBox::warning(this, "Warning",
+			"No analog input device is configured");
+		return;
+	}
+	KTraceDialog *dialog = new KTraceDialog(data.settings, &dataCard, this);
+	if(dialog->exec())
+	{
+		setControlsEnabled(true);
+		data.settings = *dialog->settings;
+		defaultCaption();
+		data.collect();
+	}
+	delete dialog;
 }
 
 void KTraceApp::stopTrace()
 {
-	// data.stop();
+	data.stop();
 }
 
 // void KTraceApp::commandCallback(int id)
@@ -237,16 +239,15 @@ void KTraceApp::stopTrace()
 
 void KTraceApp::slotBuffer()
 {
-	// if(dataCard.good() == false)
-	// {
-	// 	QMessageBox::warning(this, "Warning",
-	// 		"No analog input device is configured");
-	// 	return;
-	// }
+	if(dataCard.good() == false)
+	{
+		QMessageBox::warning(this, "Warning",
+			"No analog input device is configured");
+		return;
+	}
 
-	// BufferDialog *dialog = new BufferDialog(&dataCard, this);
-	// dialog->exec();
-	// delete dialog;
+	BufferDialog *dialog = new BufferDialog(&dataCard, this);
+	dialog->exec();
 }
 
 void KTraceApp::slotZoom()
@@ -254,27 +255,27 @@ void KTraceApp::slotZoom()
 	ZoomDialog *dialog = new ZoomDialog(this);
 
 	// initialize dialog with current zoom values
-	// dialog->hZoom(view->hZoom());
-	// if(dialog->exec())
-	// {
-	// 	// write new zoom value
-	// 	view->hZoom(dialog->hZoom());
-	// }
+	dialog->hZoom(view->hZoom());
+	if(dialog->exec())
+	{
+		// write new zoom value
+		view->hZoom(dialog->hZoom());
+	}
 
-	// if(dialog) {
-	// 	delete dialog;
-	// }
+	if(dialog) {
+		delete dialog;
+	}
 }
 
 void KTraceApp::slotColors()
 {
 	KTraceColorDialog *dialog = new KTraceColorDialog(this);
-	dialog->fgColor(Qt::black /*view->fgColor()*/);
-	dialog->bgColor(Qt::white /*view->bgColor()*/);
+	dialog->fgColor(view->fgColor());
+	dialog->bgColor(view->bgColor());
 	if(dialog->exec())
 	{
-		//view->fgColor(dialog->fgColor());
-		//view->bgColor(dialog->bgColor());
+		view->fgColor(dialog->fgColor());
+		view->bgColor(dialog->bgColor());
 	}
 	if(dialog) {
 		delete dialog;
@@ -291,11 +292,11 @@ void KTraceApp::slotAbout()
 
 void KTraceApp::slotUpdateLED()
 {
-	// pthread_mutex_lock(&aquisitionThreadCountLock);
-	// view->setWriteIndicator(aquisitionThreadCount);
-	// pthread_mutex_unlock(&aquisitionThreadCountLock);
+	pthread_mutex_lock(&aquisitionThreadCountLock);
+	view->setWriteIndicator(aquisitionThreadCount);
+	pthread_mutex_unlock(&aquisitionThreadCountLock);
 
-	// view->setDeviceIndicator(dataCard.good());
+	view->setDeviceIndicator(dataCard.good());
 }
 
 void KTraceApp::setControlsEnabled(bool go)
@@ -306,44 +307,43 @@ void KTraceApp::setControlsEnabled(bool go)
 	// controlMenu->setItemEnabled(ID_START, !go);
 	// controlMenu->setItemEnabled(ID_STOP, go);
 	// controlMenu->setItemEnabled(ID_QUIT, !go);
-	// menuBar()->setItemEnabled(ID_DEVICE_MENU, !go);	
-	// menuBar()->setItemEnabled(ID_VIEW_MENU, !go);	
-	// menuBar()->setItemEnabled(ID_HELP_MENU, !go);	
+	// menuBar()->setItemEnabled(ID_DEVICE_MENU, !go);
+	// menuBar()->setItemEnabled(ID_VIEW_MENU, !go);
+	// menuBar()->setItemEnabled(ID_HELP_MENU, !go);
 }
 
 int KTraceApp::setDevice(unsigned int devNum)
 {
-	// QString devName;
+	QString devName;
 
-	// if(devNum >= maxDev)
-	// {
-	// 	return -1;
-	// }
-	// // uncheck devices in devMenu
-	// for(unsigned int i = 0; i < maxDev; i++)
-	// 	deviceMenu->setItemChecked(deviceMenu->idAt(i), false);
-	// if(data.setDevice(devNum) == 0)
-	// {
-	// 	deviceMenu->setItemChecked(deviceMenu->idAt(devNum), true);
-	// 	view->fullScale(dataCard.maxData());
-	// }else
-	// {
-	// 	devName.setNum(devNum);
-	// 	devName = "/dev/comedi" + devName;
-	// 	QMessageBox::warning(this, "Warning",
-	// 		"No asynchronous analog input subdevice was found\n"
-	// 		"on " + devName + ".  Choose a different device.");
-	// 	return -1;
-	// }
-	// return devNum;
-	return 0;
+	if(devNum >= maxDev)
+	{
+		return -1;
+	}
+	// uncheck devices in devMenu
+	for(unsigned int i = 0; i < maxDev; i++)
+		dynamic_cast<QAction*>(devicesActionList[i])->setChecked(false);
+
+	if(data.setDevice(devNum) == 0)
+	{
+		dynamic_cast<QAction*>(devicesActionList[devNum])->setChecked(true);
+		view->fullScale(dataCard.maxData());
+	}else
+	{
+		devName.setNum(devNum);
+		devName = "/dev/comedi" + devNum;
+		QMessageBox::warning(this, "Warning",
+			"No asynchronous analog input subdevice was found\n"
+			"on " + devName + ".  Choose a different device.");
+		return -1;
+	}
+	return devNum;
 }
 
 void KTraceApp::saveConfig()
 {
-	// // save configuration
-	// saveMainWindowSettings(kapp->config(), "window");
-	// data.saveConfig(kapp->config());
-	// view->saveConfig(kapp->config());
-	// kapp->config()->sync();
+	// save configuration
+	//saveMainWindowSettings("window");
+	data.saveConfig();
+	view->saveConfig();
 }

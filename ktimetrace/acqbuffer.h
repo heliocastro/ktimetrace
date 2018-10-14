@@ -29,7 +29,6 @@ QT_END_NAMESPACE
 
 
 #include "adc.h"
-#include "data.h"
 
 class AcqBuffer {
 public:
@@ -48,7 +47,12 @@ private:
 	// returns true on a little endian cpu
 	bool cpuIsLittleEndian();
 	// optionally swaps bytes
-	inline int16_t swap_bytes_16(int16_t word, bool swap);
+	inline int16_t swap_bytes_16(int16_t word, bool swap) {
+		if(swap)
+			return (word & 0xff) << 8 | ((word >> 8) & 0xff);
+		else
+			return word;
+	}
 	/* card we are taking data from */
 	adc *myADC;
 	/* temporary file to store data while we are aquiring it */
@@ -73,14 +77,6 @@ inline ssize_t AcqBuffer::read(void *buffer, size_t size)
 		}
 	}
 	return bytes;
-}
-
-extern inline int16_t AcqBuffer::swap_bytes_16(int16_t word, bool swap)
-{
-	if(swap)
-		return (word & 0xff) << 8 | ((word >> 8) & 0xff);
-	else
-		return word;
 }
 
 #endif

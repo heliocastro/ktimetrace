@@ -16,21 +16,20 @@
 //  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
 //  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
-#include "data.h"
-#include "ktimetrace.h"
-
-#include <kapp.h>
-
-#include <qmessagebox.h>
+#include <QMessageBox>
+#include <QTimer>
 
 #include <iostream>
 #include <fstream>
 #include <errno.h>
-#include <math.h>
-#include <time.h>
+#include <cmath>
+#include <ctime>
 #include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
+
+#include "data.h"
+#include "ktimetrace.h"
 
 static void* aquisitionThreadFunction(void*);
 
@@ -130,7 +129,8 @@ void KTTEngine::collect()
 	prefix = shellPrefix(settings);
 	if(settings.execAtStart)
 	{
-		retval = system(prefix + settings.startCommand);
+		prefix.append(settings.startCommand);
+		retval = system(prefix.toLocal8Bit());
 		if(retval)
 		{
 			errorMessage = "nonzero system() return value: " + QString::number(retval) + "  at start of aquisition";
@@ -201,12 +201,12 @@ void KTTEngine::collect()
 
 void KTTEngine::stop()
 {
-	KTraceApp *mainWindow = (KTraceApp*) kapp->mainWidget();
+	//KTraceApp *mainWindow = (KTraceApp*) kapp->mainWidget();
 
 	setGo(false);
 
 	plotTimer->stop();
-	mainWindow->setControlsEnabled(false);
+	//mainWindow->setControlsEnabled(false);
 }
 
 void KTTEngine::setView(KTraceView *viewPtr)
@@ -320,7 +320,8 @@ cleanup:
 	prefix = shellPrefix(localSettings);
 	if(localSettings.execAtEnd)
 	{
-		ret = system(prefix + localSettings.endCommand);
+		prefix.append(localSettings.endCommand);
+		ret = system(prefix.toLocal8Bit());
 		if(ret)
 		{
 			std::cerr << "nonzero system() return value: " << ret << "  at end of aquisition" << std::endl;
@@ -350,7 +351,7 @@ int KTTEngine::writeFiles(KTTSettings localSettings, AcqBuffer *aBuf)
 	fileName = localSettings.fullFileStem();
 	// write parameter file containing useful info
 	paramFileName = fileName + ".ts-par";
-	paramFile.open(paramFileName);
+	paramFile.open(paramFileName.toStdString());
 	if(!paramFile)
 	{
 		std::cerr << "error opening parameter save file" << std::endl;
@@ -358,27 +359,27 @@ int KTTEngine::writeFiles(KTTSettings localSettings, AcqBuffer *aBuf)
 		goto cleanup;
 	}
 	paramFile << "[info]" << std::endl;
-	paramFile << "program=" << PACKAGE << std::endl;
-	paramFile << "version=" << VERSION << std::endl;
-	paramFile << "filename=" << fileName << std::endl;
-	paramFile << "hardware=" << localSettings.boardName << std::endl;
+	paramFile << "program=" << "KTimeTrace" << std::endl;
+	paramFile << "version=" << "0.3.0" << std::endl;
+	paramFile << "filename=" << fileName.toStdString() << std::endl;
+	paramFile << "hardware=" << localSettings.boardName.toStdString() << std::endl;
 	now = time(NULL);
 	paramFile << "time stamp=" << asctime(localtime(&now));
 	paramFile << "[settings]" << std::endl;
-	paramFile << "scan trigger=" << adc::trigToText(localSettings.scanTrigger) << std::endl;
+	paramFile << "scan trigger=" << adc::trigToText(localSettings.scanTrigger).toStdString() << std::endl;
 	if(localSettings.scanTrigger == TRIG_TIMER ||
 		(localSettings.conversionTrigger == TRIG_TIMER &&
 		localSettings.scanTrigger == TRIG_FOLLOW))
 		paramFile << "scan frequency=" << localSettings.scanFrequency << std::endl;
-	paramFile << "conversion trigger=" << adc::trigToText(localSettings.conversionTrigger) << std::endl;
+	paramFile << "conversion trigger=" << adc::trigToText(localSettings.conversionTrigger).toStdString() << std::endl;
 	if(localSettings.conversionTrigger == TRIG_TIMER)
 		paramFile << "conversion frequency=" << localSettings.conversionFrequency << std::endl;
-	paramFile << "stop trigger=" << adc::trigToText(localSettings.stopTrigger) << std::endl;
+	paramFile << "stop trigger=" << adc::trigToText(localSettings.stopTrigger).toStdString() << std::endl;
 	if(localSettings.stopTrigger == TRIG_COUNT)
 		paramFile << "scans requested=" << localSettings.numScans << std::endl;
 	paramFile << "scans completed=" << localSettings.numScansCompleted << std::endl;
 	paramFile << "number of channels=" << localSettings.numChannels << std::endl;
-	paramFile << "input range=" << localSettings.rangeInfo.min << "," 
+	paramFile << "input range=" << localSettings.rangeInfo.min << ","
 		<< localSettings.rangeInfo.max << std::endl;
 	switch(localSettings.rangeInfo.unit)
 	{
@@ -392,28 +393,28 @@ int KTTEngine::writeFiles(KTTSettings localSettings, AcqBuffer *aBuf)
 			paramFile << "input unit=unknown" << std::endl;
 			break;
 	}
-	paramFile << "input reference=" << adc::refToText(localSettings.reference) << std::endl;
+	paramFile << "input reference=" << adc::refToText(localSettings.reference).toStdString() << std::endl;
 	if(paramFile.good() == false)
 	{
 		std::cerr << "error writing parameter file" << std::endl;
 		paramFile.close();
-		ret = -1;		
+		ret = -1;
 		goto cleanup;
 	}
-	paramFile.close();		
+	paramFile.close();
 
 	// write data files
 	fileName = localSettings.fullFileName();
 	switch(localSettings.saveType)
 	{
 		case TEXT:
-			ret = aBuf->writeTextFile(fileName, localSettings.numChannels);
+			ret = aBuf->writeTextFile(fileName.toLocal8Bit(), localSettings.numChannels);
 			break;
 		case GZ_TEXT:
-			ret = aBuf->writeGZTextFile(fileName, localSettings.numChannels);
+			ret = aBuf->writeGZTextFile(fileName.toLocal8Bit(), localSettings.numChannels);
 			break;
 		case BINARY:
-			ret = aBuf->writeBinaryFiles(fileName, localSettings.numChannels);
+			ret = aBuf->writeBinaryFiles(fileName.toLocal8Bit(), localSettings.numChannels);
 			break;
 		default:
 			std::cerr << "save type not specified" << std::endl;
@@ -446,45 +447,45 @@ bool KTTEngine::writeDone()
 void KTTEngine::slotUpdatePlot()
 {
 	unsigned int channel;
-	KTraceApp *mainWindow = (KTraceApp*) kapp->mainWidget();
-	QString errorMessage;
+	// KTraceApp *mainWindow = (KTraceApp*) kapp->mainWidget();
+	// QString errorMessage;
 
-	pthread_mutex_lock(&dataFifoMutex);
-	if(dataFifo.empty() == false)
-	{
-		// plot any new points
-		while(dataFifo.empty() == false)
-		{
-			channel =  numPointsPlotted % settings.numChannels;
-			view->input(dataFifo[0], channel);
-			dataFifo.pop_front();
-			numPointsPlotted++;
-		}
-		pthread_mutex_unlock(&dataFifoMutex);
+	// pthread_mutex_lock(&dataFifoMutex);
+	// if(dataFifo.empty() == false)
+	// {
+	// 	// plot any new points
+	// 	while(dataFifo.empty() == false)
+	// 	{
+	// 		channel =  numPointsPlotted % settings.numChannels;
+	// 		view->input(dataFifo[0], channel);
+	// 		dataFifo.pop_front();
+	// 		numPointsPlotted++;
+	// 	}
+	// 	pthread_mutex_unlock(&dataFifoMutex);
 
-		// update progress bar
-		if(settings.stopTrigger == TRIG_COUNT)
-			view->setProgress((int)((100.0 * (numPointsPlotted)) / (settings.numScans * settings.numChannels)));
-	}else
-		pthread_mutex_unlock(&dataFifoMutex);
-	
-	// check if aquisition is over
-	if(getGo() == false)
-	{
-		view->flush();
-		mainWindow->setControlsEnabled(false);
-		plotTimer->stop();
-	}
+	// 	// update progress bar
+	// 	if(settings.stopTrigger == TRIG_COUNT)
+	// 		view->setProgress((int)((100.0 * (numPointsPlotted)) / (settings.numScans * settings.numChannels)));
+	// }else
+	// 	pthread_mutex_unlock(&dataFifoMutex);
 
-	// do actual plotting
-	view->updatePlots();
+	// // check if aquisition is over
+	// if(getGo() == false)
+	// {
+	// 	view->flush();
+	// 	mainWindow->setControlsEnabled(false);
+	// 	plotTimer->stop();
+	// }
 
-	// check for errors and display them
-	errorMessage = getErrorString();
-	if(errorMessage.isEmpty() == false)
-	{
-		QMessageBox::warning(view, "Aquisition error", errorMessage);	
-	}
+	// // do actual plotting
+	// view->updatePlots();
+
+	// // check for errors and display them
+	// errorMessage = getErrorString();
+	// if(errorMessage.isEmpty() == false)
+	// {
+	// 	QMessageBox::warning(view, "Aquisition error", errorMessage);
+	// }
 }
 
 void KTTEngine::setErrorString(QString newError)
@@ -512,17 +513,17 @@ QString KTTEngine::bashString(QString input)
 
 	// escape any special characters in string by inserting a backslash before them
 	// escape backslash (must be done first before we insert any of our own)
-	for(index = input.findRev('\\', -1); index >= 0; index = input.findRev('\\', index))
+	for(index = input.lastIndexOf('\\', -1); index >= 0; index = input.lastIndexOf('\\', index))
 	{
 		input.insert(index, '\\');
 		// need to decrement index since we are searching for the same character we are inserting
-		if(--index < 0) break;	
+		if(--index < 0) break;
 	}
 	// escape double-quotes
-	for(index = input.findRev('\"', -1); index >= 0; index = input.findRev('\"', index))
+	for(index = input.lastIndexOf('\"', -1); index >= 0; index = input.lastIndexOf('\"', index))
 		input.insert(index, '\\');
 	// escape dollar sign
-	for(index = input.findRev('$', -1); index >= 0; index = input.findRev('$', index))
+	for(index = input.lastIndexOf('$', -1); index >= 0; index = input.lastIndexOf('$', index))
 		input.insert(index, '\\');
 	// put string in double quotes
 	input = "\"" + input + "\"";

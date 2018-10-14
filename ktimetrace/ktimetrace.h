@@ -20,16 +20,17 @@
 #define KTRACEAPP_H
 
 #include <QMainWindow>
+#include <QList>
 
-//#include "data.h"
-//#include "resource.h"
+#include "data.h"
+#include "resource.h"
 
-QT_BEGIN_NAMESPACE
 class QAction;
 class QPopupMenu;
 class QTimer;
 class QToolBar;
-QT_END_NAMESPACE
+
+class KTraceView;
 
 class KTraceApp : public QMainWindow
 {
@@ -41,13 +42,13 @@ public:
 	/* creates a caption for the main window and displays it */
 	void defaultCaption();
 	/* our daq card object - this shouldn't need to be public! */
-	//adc dataCard;
+	adc dataCard;
 	/* turns various gui controls on and off according to whether or not
 	 * we are currently aquiring data*/
 	void setControlsEnabled(bool go);
 protected:
 	virtual bool queryClose();
-	virtual bool queryExit();
+	void queryExit();
 private:
 	void createActions();
 	void createToolbars();
@@ -68,9 +69,9 @@ private:
 	/* help menu on menubar */
 	QMenu *myHelpMenu;
 	/* the main graphical display widget */
-	//KTraceView *view;
+	KTraceView *view;
 	/* our poorly thought-out catch-all class*/
-	//KTTEngine data;
+	KTTEngine data;
 	/* used to periodically update the status led */
 	QTimer *statusTimer;
 	/* total number of possible /dev/comediX files */
@@ -83,6 +84,9 @@ private:
 	QAction *whatsThisAction;
 	QAction *colorsAction;
 	QAction *zoomAction;
+	QAction *bufferAction;
+	QList<QAction *> devicesActionList;
+	QAction *exitAction;
 
 	// Toolbars
 	QToolBar *mainToolBar;

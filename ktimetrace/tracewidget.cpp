@@ -1,27 +1,31 @@
-/***************************************************************************
-                          tracewidget.cpp  -  description
-                             -------------------
-    begin                : Tue May 23 17:09:23 CDT 2000
-    copyright            : (C) 2000 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  This file is part of ktimetrace.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
-#include "tracewidget.h"
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 
-#include <qpainter.h>
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
+
+#include <QPainter>
+#include <QPalette>
+#include <QPaintEvent>
 
 #include <iostream>
 
-TraceWidget::TraceWidget(int ch, QWidget *parent, const char *name) : QWidget(parent, name, WRepaintNoErase)
+#include "tracewidget.h"
+
+TraceWidget::TraceWidget(int ch, QWidget *parent)
+	: QWidget(parent)
 {
 	channel = ch;
 	fScale = 4096;
@@ -29,7 +33,11 @@ TraceWidget::TraceWidget(int ch, QWidget *parent, const char *name) : QWidget(pa
 	left = 0;
 	lastPlotted = 0;
 	plotByBlock = true;
-	setBackgroundColor(white);
+
+	QPalette pal = palette();
+	pal.setColor(QPalette::Background, Qt::white);
+	setAutoFillBackground(true);
+	setPalette(pal);
 	horizontalZoom = 1.0;
 	plotWidth = getDisplayWidth(width(), horizontalZoom);
 
@@ -68,7 +76,7 @@ void TraceWidget::plot()
 void TraceWidget::reinit()
 {
 	current = left = lastPlotted = 0;
-	repaint(false);
+	repaint();
 }
 
 unsigned int TraceWidget::fullScale(unsigned int scale)
@@ -152,23 +160,25 @@ void TraceWidget::paintEvent(QPaintEvent *event)
 	}
 
 	QPainter p(&pix);
-	p.fillRect(event->rect(), backgroundColor());
+	QPainterPath path;
+	p.fillRect(event->rect(), palette().background());
 	p.setPen(plotColor);
 	for(long long i = oldest; i <= newest; i++)
 	{
 		if(i == oldest)
 		{
-			p.moveTo(indexToX(i),
+			path.moveTo(indexToX(i),
 				(int) ((height() - 1) * (1.0 - (float) plotArray[i % plotArrayLength] / fScale)));
 		}else if(i == left)
 		{
-			p.lineTo((int) (indexToX(i - 1) + horizontalZoom),
+			path.lineTo((int) (indexToX(i - 1) + horizontalZoom),
 				(int) ((height() - 1) * (1.0 - (float) plotArray[i % plotArrayLength] / fScale)));
-			p.moveTo(indexToX(i),
+			path.moveTo(indexToX(i),
 				(int) ((height() - 1) * (1.0 - (float) plotArray[i % plotArrayLength] / fScale)));
 		}else
-			p.lineTo(indexToX(i),
+			path.lineTo(indexToX(i),
 				(int) ((height() - 1) * (1.0 - (float) plotArray[i % plotArrayLength] / fScale)));
+		p.drawPath(path);
 	}
 
 	QPainter pp(this);
@@ -182,7 +192,7 @@ void TraceWidget::paintEvent(QPaintEvent *event)
 void TraceWidget::resizeEvent(QResizeEvent *event)
 {
 	plotWidth = getDisplayWidth(width(), horizontalZoom);
-	pix.resize(event->size());
+	pix = pix.scaled(event->size());
 }
 
 unsigned int TraceWidget::getDisplayWidth(unsigned int width, float zoom)

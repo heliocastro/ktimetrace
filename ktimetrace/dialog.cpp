@@ -16,19 +16,26 @@
 //  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
 //  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
-#include "dialog.h"
+#include <QLineEdit>
+#include <QLabel>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QPushButton>
+#include <QListWidget>
+#include <QCheckBox>
+#include <QFrame>
+#include <QMessageBox>
+#include <QTextEdit>
+#include <QFileDialog>
 
-#include <qmessagebox.h>
-#include <qfiledialog.h>
-#include <qwhatsthis.h>
-
-#include <math.h>
+#include <cmath>
 #include <cassert>
 
 #include "ktimetrace.h"
+#include "dialog.h"
 
 KTraceDialog::KTraceDialog(KTTSettings oldSettings, adc *currentADC,
-	QWidget *parent, const char *name) : QDialog(parent, name, true)
+	QWidget *parent) : QDialog(parent)
 {
 	myADC = currentADC;
 	settings = new KTTSettings;
@@ -47,23 +54,30 @@ KTraceDialog::~KTraceDialog()
 void KTraceDialog::refreshValues()
 {
 	QString temp;
-	QListBoxItem* item;
+	int item = 0;
 
 	saveData->setChecked(settings->saveData);
 	fileWidgetsSetEnabled(settings->saveData);
-	directory->setText(settings->directory.absPath());
+	directory->setText(settings->directory.absolutePath());
 	fileName->setText(settings->fileStem);
 	fileNum->setValue(settings->fileNum);
-	saveType->setCurrentItem(settings->saveType);
+	saveType->setCurrentIndex(settings->saveType);
 
-	item = startTriggerList->findItem(adc::trigToText(settings->startTrigger));
-	startTrigger->setCurrentItem(startTriggerList->index(item));
-	item = scanTriggerList->findItem(adc::trigToText(settings->scanTrigger));
-	scanTrigger->setCurrentItem(scanTriggerList->index(item));
-	item = conversionTriggerList->findItem(adc::trigToText(settings->conversionTrigger));
-	conversionTrigger->setCurrentItem(conversionTriggerList->index(item));
-	item = stopTriggerList->findItem(adc::trigToText(settings->stopTrigger));
-	stopTrigger->setCurrentItem(stopTriggerList->index(item));
+	item = startTrigger->findText(adc::trigToText(settings->startTrigger));
+	if(item >= 0)
+		startTrigger->setCurrentIndex(item);
+
+	item = scanTrigger->findText(adc::trigToText(settings->scanTrigger));
+	if(item >= 0)
+		scanTrigger->setCurrentIndex(item);
+
+	item = conversionTrigger->findText(adc::trigToText(settings->conversionTrigger));
+	if(item >= 0)
+		conversionTrigger->setCurrentIndex(item);
+
+	item = stopTrigger->findText(adc::trigToText(settings->stopTrigger));
+	if(item >= 0)
+		stopTrigger->setCurrentIndex(item);
 
 	// display scanning and conversion frequencies if we can figure out what it is
 	if(settings->scanTrigger == TRIG_TIMER ||
@@ -90,11 +104,11 @@ void KTraceDialog::refreshValues()
 	numScans->setEnabled(settings->stopTrigger == TRIG_COUNT);
 	numScans->setValue(settings->numScans);
 
-	range->setCurrentItem(settings->range);
+	range->setCurrentIndex(settings->range);
 
-	item = referenceList->findItem(adc::refToText(settings->reference));
-	if(item)
-		reference->setCurrentItem(referenceList->index(item));
+	item = reference->findText(adc::refToText(settings->reference));
+	if(item >=0)
+		reference->setCurrentIndex(item);
 
 	realTime->setChecked(settings->realTime);
 	lowLatency->setChecked(settings->lowLatency);
@@ -130,7 +144,7 @@ void KTraceDialog::checkSettings()
 	if(rangePtr == 0)
 	{
 		settings->range = 0;
-		rangePtr = myADC->getRange(settings->range);	
+		rangePtr = myADC->getRange(settings->range);
 	}
 	assert(rangePtr);
 	settings->rangeInfo = *rangePtr;
@@ -177,7 +191,7 @@ void  KTraceDialog::initDialog()
 	boardDesc = new QLabel(this);
 	boardDesc->move(hsep, vsep);
 	string1 = "<b>Device: " + myADC->boardName() + " on " + myADC->devicePath() + "</b>";
-	boardDesc->setTextFormat(RichText);
+	boardDesc->setTextFormat(Qt::RichText);
 	boardDesc->resize(boardDesc->fontMetrics().size(0, string1));
 	boardDesc->setText(string1);
 
@@ -188,16 +202,15 @@ void  KTraceDialog::initDialog()
 
 	fileFrame = new QFrame(this);
 	fileFrame->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	fileFrame->setMargin(hsep);
 	fileFrame->move(saveData->x() + hsep, saveData->geometry().bottom() + vsep);
 
 	browse = new QPushButton("&Browse...", fileFrame);
-	browse->move(fileFrame->margin(), fileFrame->margin());
+	browse->move(10, 10);
 	browse->adjustSize();
 
 	directory = new QLineEdit(fileFrame);
 	directory->setGeometry(browse->geometry().right() + hsep, browse->y(), 250, directory->sizeHint().height());
-	QWhatsThis::add(directory, "Directory where data will be saved");
+	directory->setWhatsThis("Directory where data will be saved");
 
 	directoryLabel = new QLabel(fileFrame);
 	directoryLabel->move(directory->geometry().right() + hsep, directory->y());
@@ -207,7 +220,8 @@ void  KTraceDialog::initDialog()
 	fileName = new QLineEdit(fileFrame);
 	fileName->move(browse->x(), browse->geometry().bottom() + vsep);
 	fileName->adjustSize();
-	QWhatsThis::add(fileName, "The file stem of the saved data file.  The file number "
+	fileName->setWhatsThis(
+		"The file stem of the saved data file.  The file number "
 		"and a file type extension will be appended");
 
 	fileNameLabel = new QLabel(fileFrame);
@@ -219,20 +233,21 @@ void  KTraceDialog::initDialog()
 	fileNum->move(fileName->x(), fileName->geometry().bottom() + vsep);
 	fileNum->setRange(0, 999);
 	fileNum->adjustSize();
-	QWhatsThis::add(fileNum, "The file number.  It is appended to the file stem");
+	fileNum->setWhatsThis("The file number.  It is appended to the file stem");
 
 	fileNumLabel = new QLabel(fileFrame);
 	fileNumLabel->move(fileNum->geometry().right() + hsep, fileNum->y());
 	fileNumLabel->setText("File number");
 	fileNumLabel->adjustSize();
 
-	saveType = new QComboBox(false, fileFrame);
+	saveType = new QComboBox(fileFrame);
 	saveType->move(fileNum->x(), fileNum->geometry().bottom() + vsep);
-	saveType->insertItem("Tab delimited text", TEXT);
-	saveType->insertItem("Gzipped text", GZ_TEXT);
-	saveType->insertItem("True binary (deprecated)", BINARY);
+	saveType->addItem("Tab delimited text", TEXT);
+	saveType->addItem("Gzipped text", GZ_TEXT);
+	saveType->addItem("True binary (deprecated)", BINARY);
 	saveType->adjustSize();
-	QWhatsThis::add(saveType, "Format for the saved data file.  'True binary' was included "
+	saveType->setWhatsThis(
+		"Format for the saved data file.  'True binary' was included "
 		"for backward compatiblity with my lab's previous data taking software.  It stores "
 		"data as an array of 16 bit integers (signed or unsigned for bipolar/unipolar ranges) "
 		"with little endian byte ordering.");
@@ -244,19 +259,17 @@ void  KTraceDialog::initDialog()
 
 	leftColumn = new QWidget(this);
 
-	startTrigger = new QComboBox(false, leftColumn);
+	startTrigger = new QComboBox(leftColumn);
 	startTrigger->move(0, 0);
-	startTriggerList = new QListBox(leftColumn);
 	if(myADC->startTriggerMask() & TRIG_NOW)
-		startTriggerList->insertItem(adc::trigToText(TRIG_NOW));
+		startTrigger->addItem(adc::trigToText(TRIG_NOW));
 	if(myADC->startTriggerMask() & TRIG_EXT)
-		startTriggerList->insertItem(adc::trigToText(TRIG_EXT));
-	startTrigger->setListBox(startTriggerList);
+		startTrigger->addItem(adc::trigToText(TRIG_EXT));
 	startTrigger->adjustSize();
 	// disable combo box if it has only one option
 	if(startTrigger->count() < 2)
 		startTrigger->setEnabled(false);
-	QWhatsThis::add(startTrigger, "The trigger which begins data aquisition");
+	startTrigger->setWhatsThis("The trigger which begins data aquisition");
 
 	startTriggerLabel = new QLabel(leftColumn);
 	startTriggerLabel->move(startTrigger->geometry().right() + hsep, startTrigger->y());
@@ -267,28 +280,27 @@ void  KTraceDialog::initDialog()
 	numChannels->move(startTrigger->x(), startTrigger->geometry().bottom() + vsep);
 	numChannels->setRange(1, myADC->numChannels());
 	numChannels->adjustSize();
-	QWhatsThis::add(numChannels, "The number of channels to be read for each scan");
+	numChannels->setWhatsThis("The number of channels to be read for each scan");
 
 	numChannelsLabel = new QLabel(leftColumn);
 	numChannelsLabel->move(numChannels->geometry().right() + hsep, numChannels->y());
 	numChannelsLabel->setText("Number of channels");
 	numChannelsLabel->adjustSize();
 
-	scanTrigger = new QComboBox(false, leftColumn);
+	scanTrigger = new QComboBox(leftColumn);
 	scanTrigger->move(numChannels->x(), numChannels->geometry().bottom() + vsep);
-	scanTriggerList = new QListBox(leftColumn);
 	if(myADC->scanTriggerMask() & TRIG_TIMER)
-		scanTriggerList->insertItem(adc::trigToText(TRIG_TIMER));
+		scanTrigger->addItem(adc::trigToText(TRIG_TIMER));
 	if(myADC->scanTriggerMask() & TRIG_FOLLOW)
-		scanTriggerList->insertItem(adc::trigToText(TRIG_FOLLOW));
+		scanTrigger->addItem(adc::trigToText(TRIG_FOLLOW));
 	if(myADC->scanTriggerMask() & TRIG_EXT)
-		scanTriggerList->insertItem(adc::trigToText(TRIG_EXT));
-	scanTrigger->setListBox(scanTriggerList);
+		scanTrigger->addItem(adc::trigToText(TRIG_EXT));
 	scanTrigger->adjustSize();
 	// disable combo box if it has only one option
 	if(scanTrigger->count() < 2)
 		scanTrigger->setEnabled(false);
-	QWhatsThis::add(scanTrigger, "The trigger which starts a scan.  The '" +
+	scanTrigger->setWhatsThis(
+		"The trigger which starts a scan.  The '" +
 		adc::trigToText(TRIG_FOLLOW) + "' trigger makes scans follow the "
 		"conversion trigger.");
 
@@ -300,7 +312,8 @@ void  KTraceDialog::initDialog()
 	scanFrequency = new QLineEdit(leftColumn);
 	scanFrequency->move(scanTrigger->x(), scanTrigger->geometry().bottom() + vsep);
 	scanFrequency->adjustSize();
-	QWhatsThis::add(scanFrequency, "Determines the frequency with which scans are taken "
+	scanFrequency->setWhatsThis(
+		"Determines the frequency with which scans are taken "
 		"when based on a '" + adc::trigToText(TRIG_TIMER) + "' trigger");
 
 	scanFrequencyLabel = new QLabel(leftColumn);
@@ -308,21 +321,20 @@ void  KTraceDialog::initDialog()
 	scanFrequencyLabel->setText("Scan Frequency (Hz)");
 	scanFrequencyLabel->adjustSize();
 
-	conversionTrigger = new QComboBox(false, leftColumn);
+	conversionTrigger = new QComboBox(leftColumn);
 	conversionTrigger->move(scanFrequency->x(), scanFrequency->geometry().bottom() + vsep);
-	conversionTriggerList = new QListBox(leftColumn);
 	if(myADC->conversionTriggerMask() & TRIG_TIMER)
-		conversionTriggerList->insertItem(adc::trigToText(TRIG_TIMER));
+		conversionTrigger->addItem(adc::trigToText(TRIG_TIMER));
 	if(myADC->conversionTriggerMask() & TRIG_NOW)
-		conversionTriggerList->insertItem(adc::trigToText(TRIG_NOW));
+		conversionTrigger->addItem(adc::trigToText(TRIG_NOW));
 	if(myADC->conversionTriggerMask() & TRIG_EXT)
-		conversionTriggerList->insertItem(adc::trigToText(TRIG_EXT));
-	conversionTrigger->setListBox(conversionTriggerList);
+		conversionTrigger->addItem(adc::trigToText(TRIG_EXT));
+
 	conversionTrigger->adjustSize();
 	// disable combo box if it has only one option
 	if(conversionTrigger->count() < 2)
 		conversionTrigger->setEnabled(false);
-	QWhatsThis::add(conversionTrigger, "The trigger which starts an individual conversion within "
+	conversionTrigger->setWhatsThis("The trigger which starts an individual conversion within "
 		"a scan.  The '" + adc::trigToText(TRIG_NOW) + "' trigger means to complete the scan "
 		"as quickly as possible.");
 
@@ -333,7 +345,7 @@ void  KTraceDialog::initDialog()
 	conversionFrequency = new QLineEdit(leftColumn);
 	conversionFrequency->move(conversionTrigger->x(), conversionTrigger->geometry().bottom() + vsep);
 	conversionFrequency->adjustSize();
-	QWhatsThis::add(conversionFrequency, "Determines the frequency with which conversions are made "
+	conversionFrequency->setWhatsThis("Determines the frequency with which conversions are made "
 		"when the conversion trigger is '" + adc::trigToText(TRIG_TIMER) + "'.  "
 		"May be overriden by scan frequency if scan trigger is '"+ adc::trigToText(TRIG_FOLLOW) +"'");
 
@@ -342,21 +354,20 @@ void  KTraceDialog::initDialog()
 	conversionFrequencyLabel->setText("Conversion Frequency (Hz)");
 	conversionFrequencyLabel->adjustSize();
 
-	stopTrigger = new QComboBox(false, leftColumn);
+	stopTrigger = new QComboBox(leftColumn);
 	stopTrigger->move(conversionFrequency->x(), conversionFrequency->geometry().bottom() + vsep);
-	stopTriggerList = new QListBox(leftColumn);
+	//stopTriggerList = new QListBox(leftColumn);
 	if(myADC->stopTriggerMask() & TRIG_COUNT)
-		stopTriggerList->insertItem(adc::trigToText(TRIG_COUNT));
+		stopTrigger->addItem(adc::trigToText(TRIG_COUNT));
 	if(myADC->stopTriggerMask() & TRIG_NONE)
-		stopTriggerList->insertItem(adc::trigToText(TRIG_NONE));
+		stopTrigger->addItem(adc::trigToText(TRIG_NONE));
 	if(myADC->stopTriggerMask() & TRIG_EXT)
-		stopTriggerList->insertItem(adc::trigToText(TRIG_EXT));
-	stopTrigger->setListBox(stopTriggerList);
+		stopTrigger->addItem(adc::trigToText(TRIG_EXT));
 	stopTrigger->adjustSize();
 	// disable combo box if it has only one option
 	if(stopTrigger->count() < 2)
 		stopTrigger->setEnabled(false);
-	QWhatsThis::add(stopTrigger, "The trigger which ends data aquisition.");
+	stopTrigger->setWhatsThis("The trigger which ends data aquisition.");
 
 	stopTriggerLabel = new QLabel("Stop Trigger", leftColumn);
 	stopTriggerLabel->move(stopTrigger->geometry().right() + hsep, stopTrigger->y());
@@ -366,14 +377,14 @@ void  KTraceDialog::initDialog()
 	numScans->move(stopTrigger->x(), stopTrigger->geometry().bottom() + vsep);
 	numScans->setRange(1, INT_MAX);
 	numScans->adjustSize();
-	QWhatsThis::add(numScans, "The total number of scans to perform");
+	numScans->setWhatsThis("The total number of scans to perform");
 
 	numScansLabel = new QLabel(leftColumn);
 	numScansLabel->move(numScans->geometry().right() + hsep, numScans->y());
 	numScansLabel->setText("Number of scans");
 	numScansLabel->adjustSize();
 
-	range = new QComboBox(false, leftColumn);
+	range = new QComboBox(leftColumn);
 	range->move(numScans->x(), numScans->geometry().bottom() + vsep);
 	for(int i = 0; (rangePtr = myADC->getRange(i)); i++)
 	{
@@ -388,13 +399,13 @@ void  KTraceDialog::initDialog()
 		{
 			string1 = "Range unknown";
 		}
-		range->insertItem(string1, i);
+		range->addItem(string1, i);
 	}
 	range->adjustSize();
 	// disable combo box if it has only one option
 	if(range->count() < 2)
 		range->setEnabled(false);
-	QWhatsThis::add(range,"The desired input range for your daq card");
+	range->setWhatsThis("The desired input range for your daq card");
 
 	rangeLabel = new QLabel(leftColumn);
 	rangeLabel->move(range->geometry().right() + hsep, range->y());
@@ -402,25 +413,24 @@ void  KTraceDialog::initDialog()
 	rangeLabel->adjustSize();
 
 	unsigned int subdevFlags = myADC->subdevFlags();
-	reference = new QComboBox(false, leftColumn);
-	referenceList = new QListBox(leftColumn);
+	reference = new QComboBox(leftColumn);
 	reference->move(range->x(), range->geometry().bottom() + vsep);
 	if(subdevFlags & SDF_GROUND)
-		referenceList->insertItem(adc::refToText(AREF_GROUND));
+		reference->addItem(adc::refToText(AREF_GROUND));
 	if(subdevFlags & SDF_COMMON)
-		referenceList->insertItem(adc::refToText(AREF_COMMON));
+		reference->addItem(adc::refToText(AREF_COMMON));
 	if(subdevFlags & SDF_DIFF)
-		referenceList->insertItem(adc::refToText(AREF_DIFF));
+		reference->addItem(adc::refToText(AREF_DIFF));
 	if(subdevFlags & SDF_OTHER)
-		referenceList->insertItem(adc::refToText(AREF_OTHER));
-	reference->setListBox(referenceList);
+		reference->addItem(adc::refToText(AREF_OTHER));
 	if(reference->count() == 0)
-		referenceList->insertItem("driver bug: no supported analog references specified");	
+		reference->addItem("driver bug: no supported analog references specified");
 	reference->adjustSize();
 	// disable combo box if it has only one option
 	if(reference->count() < 2)
 		reference->setEnabled(false);
-	QWhatsThis::add(reference, "The desired input reference for your daq card.  "
+	reference->setWhatsThis(
+		"The desired input reference for your daq card.  "
 		"It will be ignored if your card's input reference is not software programmable.");
 
 	referenceLabel = new QLabel(leftColumn);
@@ -429,14 +439,14 @@ void  KTraceDialog::initDialog()
 	referenceLabel->adjustSize();
 
 	// second column
-	
+
 	rightColumn = new QWidget(this);
 
 	realTime = new QCheckBox(rightColumn);
 	realTime->move(0, 0);
 	realTime->setText("Request real-time interrupts");
 	realTime->adjustSize();
-	QWhatsThis::add(realTime,
+	realTime->setWhatsThis(
 		"Request for the comedi driver to use an interrupt handler with hard "
 		"real-time priority. It will have no effect unless you are running a real-time kernel "
 		"(rtlinux or rtai) and have compiled comedi with real-time support.  "
@@ -447,7 +457,7 @@ void  KTraceDialog::initDialog()
 	lowLatency->move(realTime->x(), realTime->geometry().bottom() + vsep);
 	lowLatency->setText("Request low latency mode");
 	lowLatency->adjustSize();
-	QWhatsThis::add(lowLatency,
+	lowLatency->setWhatsThis(
 		"The 'low latency' option is good for low-frequency operation if you "
 		"get impatient waiting for blocks of data to arrive and be plotted.  "
 		"It tends to degrade performance for high frequency input.");
@@ -463,16 +473,16 @@ void  KTraceDialog::initDialog()
 	execAtStart->move(lowLatency->x(), lowLatency->geometry().bottom() + vsep);
 	execAtStart->setText("Execute shell command at start of aquisition");
 	execAtStart->adjustSize();
-	QWhatsThis::add(execAtStart, execAtStartHelp);
+	execAtStart->setWhatsThis(execAtStartHelp);
 
-	startCommand = new QMultiLineEdit(rightColumn);
+	startCommand = new QTextEdit(rightColumn);
 	startCommand->move(execAtStart->x() + hsep, execAtStart->geometry().bottom() + vsep);
 #if QT_VERSION >= 300
-	startCommand->setWordWrap(QTextEdit::NoWrap);
+	startCommand->setWordWrapMode(QTextOption::NoWrap);
 #endif
 	startCommand->setFixedHeight(5 * startCommand->fontMetrics().height());
 	startCommand->setFixedWidth(execAtStart->geometry().right() - startCommand->geometry().left());
-	QWhatsThis::add(startCommand, execAtStartHelp);
+	startCommand->setWhatsThis(execAtStartHelp);
 
 	QString execAtEndHelp = "You can enter shell commands which will be "
 		"executed when aquisition is completed.  If you are saving data to disk, the "
@@ -485,16 +495,16 @@ void  KTraceDialog::initDialog()
 	execAtEnd->move(execAtStart->x(), startCommand->geometry().bottom() + vsep);
 	execAtEnd->setText("Execute shell command at end of aquisition");
 	execAtEnd->adjustSize();
-	QWhatsThis::add(execAtEnd, execAtEndHelp);
+	execAtEnd->setWhatsThis(execAtEndHelp);
 
-	endCommand = new QMultiLineEdit(rightColumn);
+	endCommand = new QTextEdit(rightColumn);
 	endCommand->move(execAtEnd->x() + hsep, execAtEnd->geometry().bottom() + vsep);
 #if QT_VERSION >= 300
-	endCommand->setWordWrap(QTextEdit::NoWrap);
+	endCommand->setWordWrapMode(QTextOption::NoWrap);
 #endif
 	endCommand->setFixedHeight(5 * endCommand->fontMetrics().height());
 	endCommand->setFixedWidth(startCommand->width());
-	QWhatsThis::add(endCommand, execAtEndHelp);
+	endCommand->setWhatsThis(execAtEndHelp);
 
 	// done with second column
 
@@ -536,9 +546,9 @@ void KTraceDialog::slotBrowse()
 {
 	QString browseDir;
 
-	browseDir = QFileDialog::getExistingDirectory(settings->directory.path());
+	browseDir = QFileDialog::getExistingDirectory(this, "Settings", settings->directory.path());
 
-	if(browseDir)
+	if(!browseDir.isEmpty())
 		directory->setText(browseDir);
 }
 
@@ -650,7 +660,7 @@ void KTraceDialog::slotExecAtStart(bool exec)
 
 void KTraceDialog::slotStartCommand()
 {
-	settings->startCommand = startCommand->text();;
+	settings->startCommand = startCommand->toPlainText();;
 }
 
 void KTraceDialog::slotExecAtEnd(bool exec)
@@ -661,7 +671,7 @@ void KTraceDialog::slotExecAtEnd(bool exec)
 
 void KTraceDialog::slotEndCommand()
 {
-	settings->endCommand = endCommand->text();
+	settings->endCommand = endCommand->toPlainText();
 }
 
 void KTraceDialog::slotOk()

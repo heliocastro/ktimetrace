@@ -1,17 +1,17 @@
-//  This file is part of ktimetracer.
+//  This file is part of ktimetrace.
 
-//  ktimetracer is free software: you can redistribute it and/or modify
+//  ktimetrace is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
 
-//  ktimetracer is distributed in the hope that it will be useful,
+//  ktimetrace is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 
 //  You should have received a copy of the GNU General Public License
-//  along with ktimetracer.  If not, see <https://www.gnu.org/licenses/>.
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
 
 //  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
 //  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
@@ -23,14 +23,16 @@
 #include <deque>
 #include <signal.h>
 
-#include <QSettings>
-#include <QDir>
-#include <QTimer>
-
 #include "adc.h"
 #include "view.h"
 #include "acqbuffer.h"
 #include "kttsettings.h"
+
+QT_BEGIN_NAMESPACE
+class QTimer;
+QT_END_NAMESPACE
+
+class KTraceView;
 
 /* keeps track of how many file aquisition threads are running so that we don't
  * exit program before files are done writing.  I should make this not a
@@ -60,7 +62,7 @@ public:
 	/* reads settings from configuration file */
 	void loadConfig();
 	/* writes data files to disk */
-	int writeFiles(KTTSettings settings, AcqBuffer *buf);
+	int writeFiles(KTTSettings localSettings, AcqBuffer *buf);
 	// aquires data from card and puts it in dataFifo.  called by aquisition thread
 	void aquireData();
 	/* returns true if there are no file writing threads active */

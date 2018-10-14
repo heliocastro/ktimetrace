@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <math.h>
-
+#include <zlib.h>
 
 #include <QDir>
 
@@ -171,7 +171,7 @@ int AcqBuffer::writeBinaryFiles(const char *fileStem, unsigned int numChannels)
 	for(unsigned int i = 0; i < numChannels; i++)
 	{
 		temp.sprintf("%s.ts%i", fileStem, i + 1);
-		file[i] = fopen(temp, "w");
+		file[i] = fopen(temp.toLocal8Bit(), "w");
 		if(file[i] == 0)
 		{
 			for(unsigned int j = 0; j < i; j++)

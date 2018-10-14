@@ -19,15 +19,17 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <qdialog.h>
-#include <qlineedit.h>
-#include <qmultilineedit.h>
-#include <qlabel.h>
-#include <qspinbox.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qlistbox.h>
-#include <qcheckbox.h>
+#include <QDialog>
+
+class QCheckBox;
+class QComboBox;
+class QLineEdit;
+class QLabel;
+class QFrame;
+class QListWidget;
+class QPushButton;
+class QSpinBox;
+class QTextEdit;
 
 #include "data.h"
 #include "kttsettings.h"
@@ -35,7 +37,7 @@
 class KTraceDialog : public QDialog  {
 Q_OBJECT
 public:
-	KTraceDialog(KTTSettings oldSettings, adc *currentADC, QWidget *parent=0, const char *name=0);
+	KTraceDialog(KTTSettings oldSettings, adc *currentADC, QWidget *parent=0);
 	~KTraceDialog();
 	/* dialog's local copy of the settings the user wants */
 	KTTSettings *settings;
@@ -57,36 +59,36 @@ protected:
 	QComboBox *saveType;
 	QLabel *saveTypeLabel;
 	QComboBox *startTrigger;
-	QListBox *startTriggerList;
+	QListWidget *startTriggerList;
 	QLabel *startTriggerLabel;
 	QSpinBox *numChannels;
 	QLabel *numChannelsLabel;
 	QComboBox *scanTrigger;
-	QListBox *scanTriggerList;
+	QListWidget *scanTriggerList;
 	QLabel *scanTriggerLabel;
 	QLineEdit *scanFrequency;
 	QLabel *scanFrequencyLabel;
 	QComboBox *conversionTrigger;
-	QListBox *conversionTriggerList;
+	QListWidget *conversionTriggerList;
 	QLabel *conversionTriggerLabel;
 	QLineEdit *conversionFrequency;
 	QLabel *conversionFrequencyLabel;
 	QComboBox *stopTrigger;
-	QListBox *stopTriggerList;
+	QListWidget *stopTriggerList;
 	QLabel *stopTriggerLabel;
 	QSpinBox *numScans;
 	QLabel *numScansLabel;
 	QComboBox *range;
 	QLabel *rangeLabel;
 	QComboBox *reference;
-	QListBox *referenceList;
+	QListWidget *referenceList;
 	QLabel *referenceLabel;
 	QCheckBox *realTime;
 	QCheckBox *lowLatency;
 	QCheckBox *execAtStart;
-	QMultiLineEdit *startCommand;
+	QTextEdit *startCommand;
 	QCheckBox *execAtEnd;
-	QMultiLineEdit *endCommand;
+	QTextEdit *endCommand;
 	QPushButton *okButton;
 	QPushButton *cancelButton;
 	QPushButton *defaultsButton;

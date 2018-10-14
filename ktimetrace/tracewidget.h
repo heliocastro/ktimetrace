@@ -1,42 +1,41 @@
-/***************************************************************************
-                          tracewidget.h  -  description
-                             -------------------
-TraceWidget is a plotting widget used by KTraceView.  Each channel gets its
-own TraceWidget.
+//  This file is part of ktimetrace.
 
-    begin                : Tue May 23 17:09:23 CDT 2000
-    copyright            : (C) 2000 by Frank Mori Hess
-    email                : fmhess@uiuc.edu
- ***************************************************************************/
+//  ktimetrace is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  ktimetrace is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+
+//  You should have received a copy of the GNU General Public License
+//  along with ktimetrace.  If not, see <https://www.gnu.org/licenses/>.
+
+//  (C) 2001 by Frank Mori Hess <fmhess@uiuc.edu>
+//  (C) 2018 by Helio Chissini de Castro <helio@kde.org>
 
 #ifndef TRACEWIDGET_H
 #define TRACEWIDGET_H
 
-class TraceWidget;
-
-#include <qwidget.h>
-#include <qpixmap.h>
-#include <qcolor.h>
+#include <QWidget>
+#include <QColor>
 
 #include <comedilib.h>
+
+class QPixmap;
 
 class TraceWidget : public QWidget
 {
 Q_OBJECT
 public:
-	TraceWidget(int ch, QWidget *parent = 0, const char *name = 0);
+	TraceWidget(int ch, QWidget *parent = 0);
 	~TraceWidget();
 	/* plot a point in this widget (or not) */
-	inline void input(sampl_t);
+	inline void input(sampl_t point) {
+		plotArray[current++ % plotArrayLength] = point;
+	}
 	void plot();
 	/* ready widget for next run */
 	void reinit();
@@ -59,10 +58,18 @@ protected:
 	virtual void resizeEvent(QResizeEvent *event);
 private:
 	// utility function that gives x coordinate for plotting
-	inline int indexToX(long long index);
+	inline int indexToX(long long index) {
+		int ret = (int)(((plotWidth + index - left) % plotWidth) * horizontalZoom);
+		return ret;
+	}
 	/* utility function that gives index whose x coordinate is nearest
 	 * and <= to the given argument */
-	inline long long XToIndex(int x);
+	inline long long XToIndex(int x) {
+		long long ret = left + (int)(x / horizontalZoom);
+		if(ret >= current)
+			ret -= plotWidth;
+		return ret;
+	}
 	/* the channel that this widget is plotting */
 	int channel;
 	/* buffer of data that has/will be plotted */
@@ -90,25 +97,4 @@ private:
 	QColor plotColor;
 };
 
-
-// inline functions
-
-inline void TraceWidget::input(sampl_t point)
-{
-	plotArray[current++ % plotArrayLength] = point;
-}
-
-inline int TraceWidget::indexToX(long long index)
-{
-	int ret = (int)(((plotWidth + index - left) % plotWidth) * horizontalZoom);
-	return ret;
-}
-
-inline long long TraceWidget::XToIndex(int x)
-{
-	long long ret = left + (int)(x / horizontalZoom);
-	if(ret >= current)
-		ret -= plotWidth;
-	return ret;
-}
 #endif
