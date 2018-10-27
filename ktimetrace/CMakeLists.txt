@@ -30,8 +30,6 @@ set(KTIMETRACE_SRCS
     zoomdialog.cpp
     )
 
-#qt5_add_resources(UI_RESOURCES ktimetrace.qrc)
-
 qt2_wrap_moc(KTIMETRACE_SRCS
     SOURCES
         bufferdialog.h
